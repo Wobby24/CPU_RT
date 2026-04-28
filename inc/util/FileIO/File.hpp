@@ -1,0 +1,2 @@
+// add file abstraction in here for output file and json config file to inherit from
+// use std::ofstream (or fstream, color takes ostream so idk) and then have maybe JSON file or output file inherit from it so they share some properties and clean up std abstraction
