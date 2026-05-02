@@ -40,6 +40,16 @@ target_include_directories(${PROJECT_NAME}
         "${EXTERNAL_INCLUDE_DIR}"
 )
 
+file(GLOB_RECURSE PROJECT_HEADERS
+    "${INCLUDE_DIR}/*.h"
+    "${INCLUDE_DIR}/*.hpp"
+)
+
+target_sources(${PROJECT_NAME} PRIVATE
+    ${PROJECT_SOURCES}
+    ${PROJECT_HEADERS}
+)
+
 # Debug macro
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE
