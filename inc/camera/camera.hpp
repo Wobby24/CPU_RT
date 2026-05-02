@@ -14,15 +14,27 @@ namespace Aero::RT::Camera {
         }
 
         Math::ray get_ray(int i, int j) const {
-            auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
-            auto ray_direction = pixel_center - center;
-            return Math::ray(center, ray_direction);
+            // Construct a camera ray originating from the origin and directed at randomly sampled
+            // point around the pixel location i, j.
+
+            auto offset = sample_squared();
+            auto pixel_sample = pixel00_loc
+                + ((i + offset.x()) * pixel_delta_u)
+                + ((j + offset.y()) * pixel_delta_v);
+
+            auto ray_origin = center;
+            auto ray_direction = pixel_sample - ray_origin;
+
+            return Math::ray(ray_origin, ray_direction);
         }
 
         int get_image_height() const { return image_height; }
         int get_image_width() const { return image_width; }
-        int set_image_width(int value) { image_width = value; }
-        int set_aspect_ratio(double value) { aspect_ratio = value; }
+        int get_samples_per_pixel() const { return samples_per_pixel; }
+
+        void set_image_width(int value) { image_width = value; }
+        void set_aspect_ratio(double value) { aspect_ratio = value; }
+        void set_samples_per_pixel(int value) { samples_per_pixel = value; }
 
         //might not be needed quite yet if calculations for ray position are 
         //being done inside of this class 
@@ -37,6 +49,8 @@ namespace Aero::RT::Camera {
         double aspect_ratio = 16.0 / 9.0;
         int image_width = 400; // default params
         int image_height;
+        int samples_per_pixel = 10; // count of random samples for each pixel
+        double pixel_samples_scale;  // Color scale factor for a sum of pixel samples
 
         Math::point3 center;
 
@@ -47,8 +61,7 @@ namespace Aero::RT::Camera {
         void initialize() {
             image_height = std::max(1, int(image_width / aspect_ratio));
 
-            //int image_height = int(image_width / aspect_ratio);
-            //image_height = (image_height < 1) ? 1 : image_height;
+            pixel_samples_scale = 1.0 / samples_per_pixel;
 
             center = Math::point3(0, 0, 0);
 
@@ -66,6 +79,11 @@ namespace Aero::RT::Camera {
                 center - Math::vec3<double>(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
 
             pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+        }
+
+        Math::vec3<double> sample_squared() const {
+            // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
+            return Math::vec3<double>(random_double() - 0.5, random_double() - 0.5, 0);
         }
     };
 }

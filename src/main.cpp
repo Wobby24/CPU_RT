@@ -3,28 +3,13 @@
 #include <memory>
 
 #include "math/vec3.hpp"
-#include "math/ray.hpp"
-#include "math/interval.hpp"
 #include "util/color.hpp"
-#include "util/common.hpp"
 #include "geometry/hittable.hpp"
 #include "geometry/hittable_list.hpp"
 #include "geometry/sphere.hpp" 
 #include "camera/camera.hpp"
 #include "camera/compute_ray_color.hpp"
 
-//include accumulator and camera, setup a render functino for it and cleanup maind
-
-/*Aero::RT::Utils::color ray_color(const Aero::RT::Math::ray& r, const Aero::RT::Geometry::hittable& world) {
-	Aero::RT::Geometry::hit_record rec;
-	if (world.hit(r, Aero::RT::Math::interval(0, infinity), rec)) {
-		return 0.5 * (rec.normal + Aero::RT::Utils::color(1, 1, 1));
-	}
-
-	Aero::RT::Math::vec3<double> unit_direction = Aero::RT::Math::unit_vector(r.direction());
-	auto a = 0.5 * (unit_direction.y() + 1.0);
-	return (1.0 - a) * Aero::RT::Utils::color(1.0, 1.0, 1.0) + a * Aero::RT::Utils::color(0.5, 0.7, 1.0);
-}*/
 
 void renderToPPM(Aero::RT::Camera::camera& cam, const Aero::RT::Geometry::hittable& world, std::ofstream file) {
 
@@ -57,6 +42,7 @@ int main() {
 	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0, -100.5, -1), 100));
 
 	Aero::RT::Camera::camera cam;
+	cam.set_samples_per_pixel(100);
 
 	renderToPPM(cam, world, std::move(outFile));
 
