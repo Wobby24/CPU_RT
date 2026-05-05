@@ -4,6 +4,7 @@
 #include <random>
 #include <iostream>
 #include <limits>
+#include <type_traits>
 #include <memory>
 
 // tutorial has an 'using std' for shared pointers and maked shared functions, but its not the best practice to have that in a common for naming clarity reasons
@@ -18,12 +19,33 @@ inline double degrees_to_radians(double degrees) {
 	return degrees * pi / 180.0;
 }
 
-inline double random_double() {
-    static std::uniform_real_distribution<double> distribution(0.0, 1.0);
-    static std::mt19937 generator;
-    return distribution(generator);
+inline std::mt19937& global_rng() {
+    static std::mt19937 generator(std::random_device{}());
+    return generator;
 }
 
-inline double random_double(double min, double max) {
-	return min + (max - min) * random_double(); // returns random number in range of min and max
+// Default: range [0, 1]
+template <typename T>
+inline T random_value() {
+    if constexpr (std::is_integral_v<T>) {
+        std::uniform_int_distribution<T> dist(0, 1);
+        return dist(global_rng());
+    }
+    else if constexpr (std::is_floating_point_v<T>) {
+        std::uniform_real_distribution<T> dist(0, 1);
+        return dist(global_rng());
+    }
+}
+
+// Range [min, max]
+template <typename T>
+inline T random_value(T min, T max) {
+    if constexpr (std::is_integral_v<T>) {
+        std::uniform_int_distribution<T> dist(min, max);
+        return dist(global_rng());
+    }
+    else if constexpr (std::is_floating_point_v<T>) {
+        std::uniform_real_distribution<T> dist(min, max);
+        return dist(global_rng());
+    }
 }

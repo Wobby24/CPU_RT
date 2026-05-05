@@ -7,18 +7,29 @@
 #include "geometry/hittable.hpp"
 #include "geometry/hittable_list.hpp"
 #include "geometry/sphere.hpp" 
+#include "materials/metal.hpp"
+#include "materials/lambertian.hpp"
 #include "camera/camera.hpp"
-#include "camera/compute_ray_color.hpp"
+#include "renderer/integrator.hpp"
 
 
-void renderToPPM(Aero::RT::Camera::camera& cam, const Aero::RT::Geometry::hittable& world, std::ofstream file) {
+void renderToPPM(Aero::RT::Camera::camera& cam, const Aero::RT::Geometry::hittable& world, std::ofstream& file) {
 
 	file << "P3\n" << cam.get_image_width() << " " << cam.get_image_height() << "\n255\n";
 
 	for (int j = 0; j < cam.get_image_height(); j++) {
-		std::clog << "\rScanlines remaining: " << (cam.get_image_height() - j) << ' ' << std::flush;
 		for (int i = 0; i < cam.get_image_width(); i++) {
-			Aero::RT::Utils::color pixel_color = Aero::RT::compute_ray_color(cam.get_ray(i, j), world);
+
+			std::clog << "\rScanlines remaining: " << (cam.get_image_height() - j) << ' ' << std::flush;
+
+			Aero::RT::Utils::color pixel_color(0, 0, 0);
+
+			for (int s = 0; s < cam.get_samples_per_pixel(); s++) {
+				auto r = cam.get_ray(i, j);
+				pixel_color += Aero::RT::Renderer::ray_color(r, cam.get_max_depth(), world);
+			}
+
+			pixel_color *= cam.get_samples_per_pixel_scale();
 			Aero::RT::Utils::write_color(file, pixel_color);
 		}
 	}
@@ -38,13 +49,23 @@ int main() {
 	// World
 	Aero::RT::Geometry::hittable_list world;
 
-	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0, 0, -1), 0.5));
-	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0, -100.5, -1), 100));
+	// define materials
+	auto material_ground = std::make_shared<Aero::RT::Materials::lambertian>(Aero::RT::Utils::color(0.8, 0.8, 0.0));
+	auto material_center = std::make_shared<Aero::RT::Materials::lambertian>(Aero::RT::Utils::color(0.1, 0.2, 0.5));
+	auto material_left = std::make_shared<Aero::RT::Materials::metal>(Aero::RT::Utils::color(0.8, 0.8, 0.8));
+	auto material_right = std::make_shared<Aero::RT::Materials::metal>(Aero::RT::Utils::color(0.8, 0.6, 0.2));
+
+	// add spheres with materials to world
+	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0.0, -100.5, -1.0), 100.0, material_ground));
+	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0.0, 0.0, -1.2), 0.5, material_center));
+	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(-1.0, 0.0, -1.0), 0.5, material_left));
+	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(1.0, 0.0, -1.0), 0.5, material_right));
 
 	Aero::RT::Camera::camera cam;
 	cam.set_samples_per_pixel(100);
+	cam.set_max_depth(50);
 
-	renderToPPM(cam, world, std::move(outFile));
+	renderToPPM(cam, world, outFile);
 
 	return 0;
 }

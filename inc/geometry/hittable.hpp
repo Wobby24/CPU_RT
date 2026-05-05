@@ -3,12 +3,19 @@
 #include "math/ray.hpp"
 #include "math/vec3.hpp"
 #include "math/interval.hpp"
+#include <memory>
+
+namespace Aero::RT::Materials {
+	class material; // forward declaration
+}
+
 
 namespace Aero::RT::Geometry {
 	class hit_record {
 	public:
 		Math::point3 p;
 		Math::vec3<double> normal;
+		std::shared_ptr<Materials::material> mat;
 		double t;
 		bool front_face;
 

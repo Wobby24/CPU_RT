@@ -31,10 +31,16 @@ namespace Aero::RT::Camera {
         int get_image_height() const { return image_height; }
         int get_image_width() const { return image_width; }
         int get_samples_per_pixel() const { return samples_per_pixel; }
+        int get_max_depth() const { return max_depth; }
+        double get_samples_per_pixel_scale() const { return pixel_samples_scale; }
 
         void set_image_width(int value) { image_width = value; }
         void set_aspect_ratio(double value) { aspect_ratio = value; }
-        void set_samples_per_pixel(int value) { samples_per_pixel = value; }
+        void set_samples_per_pixel(int value) { 
+            samples_per_pixel = value;
+            pixel_samples_scale = 1.0 / samples_per_pixel;
+        }
+        void set_max_depth(int value) { max_depth = value; }
 
         //might not be needed quite yet if calculations for ray position are 
         //being done inside of this class 
@@ -50,6 +56,7 @@ namespace Aero::RT::Camera {
         int image_width = 400; // default params
         int image_height;
         int samples_per_pixel = 10; // count of random samples for each pixel
+        int max_depth = 10; // maximum number of ray bounces into scene
         double pixel_samples_scale;  // Color scale factor for a sum of pixel samples
 
         Math::point3 center;
@@ -83,7 +90,7 @@ namespace Aero::RT::Camera {
 
         Math::vec3<double> sample_squared() const {
             // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
-            return Math::vec3<double>(random_double() - 0.5, random_double() - 0.5, 0);
+            return Math::vec3<double>(random_value<double>() - 0.5, random_value<double>() - 0.5, 0);
         }
     };
 }
