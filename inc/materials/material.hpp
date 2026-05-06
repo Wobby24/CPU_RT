@@ -10,6 +10,6 @@ namespace Aero::RT::Materials {
 		virtual ~material() = default;
 
 		// default imp to ensure we can use pointer to generic material type
-		virtual bool scatter(const Math::ray& r_in, const Geometry::hit_record& rec, Utils::color& attenuation, Math::ray& scattered) const { return false; }
+		virtual bool scatter(const Math::ray& r_in, const Geometry::hit_record& rec, Utils::color& attenuation, Math::ray& scattered) const = 0;
 	};
 }
