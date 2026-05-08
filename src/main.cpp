@@ -8,6 +8,7 @@
 #include "geometry/hittable_list.hpp"
 #include "geometry/sphere.hpp" 
 #include "materials/metal.hpp"
+#include "materials/dielectric.hpp"
 #include "materials/lambertian.hpp"
 #include "camera/camera.hpp"
 #include "renderer/integrator.hpp"
@@ -36,6 +37,7 @@ void renderToPPM(Aero::RT::Camera::camera& cam, const Aero::RT::Geometry::hittab
 
 	std::clog << "\rDone.                 \n";
 }
+
 int main() {
 	// file (move to fileio eventually)
 	std::string fileName = "render.ppm";
@@ -52,13 +54,15 @@ int main() {
 	// define materials
 	auto material_ground = std::make_shared<Aero::RT::Materials::lambertian>(Aero::RT::Utils::color(0.8, 0.8, 0.0));
 	auto material_center = std::make_shared<Aero::RT::Materials::lambertian>(Aero::RT::Utils::color(0.1, 0.2, 0.5));
-	auto material_left = std::make_shared<Aero::RT::Materials::metal>(Aero::RT::Utils::color(0.8, 0.8, 0.8));
-	auto material_right = std::make_shared<Aero::RT::Materials::metal>(Aero::RT::Utils::color(0.8, 0.6, 0.2));
+	auto material_left = std::make_shared<Aero::RT::Materials::dielectric>(1.50);
+	auto material_bubble = std::make_shared<Aero::RT::Materials::dielectric>(1.00 / 1.50);
+	auto material_right = std::make_shared<Aero::RT::Materials::metal>(Aero::RT::Utils::color(0.8, 0.6, 0.2), 1.0);
 
 	// add spheres with materials to world
 	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0.0, -100.5, -1.0), 100.0, material_ground));
 	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0.0, 0.0, -1.2), 0.5, material_center));
 	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(-1.0, 0.0, -1.0), 0.5, material_left));
+	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(-1.0, 0.0, -1.0), 0.4, material_bubble));
 	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(1.0, 0.0, -1.0), 0.5, material_right));
 
 	Aero::RT::Camera::camera cam;
