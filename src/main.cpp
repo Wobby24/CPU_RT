@@ -95,8 +95,8 @@ int main() {
     world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(4, 1, 0), 1.0, material3));
 
     Aero::RT::Camera::camera cam;
-    cam.set_image_width(1200);
-    cam.set_samples_per_pixel(500);
+    cam.set_image_width(500);
+    cam.set_samples_per_pixel(100);
     cam.set_max_depth(50);
 
     cam.set_fov(20);
@@ -107,14 +107,10 @@ int main() {
     cam.set_defocus_angle(0.6);
     cam.set_focus_distance(1.0);
 
-    // then call init explicity
-    cam.initialize();
-
-    renderToPPM(cam, world, outFile);
-
 	// then call init explicity
 	cam.initialize();
 
+    // //#pragma omp parallel for schedule(dynamic) idk just try it and see what it does since we arent at manual multithreaidng or pools yet
 	renderToPPM(cam, world, outFile);
 
 	return 0;
