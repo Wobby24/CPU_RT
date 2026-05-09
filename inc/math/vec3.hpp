@@ -113,6 +113,14 @@ namespace Aero::RT::Math {
 		return v / v.length();
 	}
 
+	inline vec3<double> random_in_unit_disk() {
+		while (true) {
+			auto p = vec3<double>(random_value<double>(-1, 1), random_value<double>(-1, 1), 0);
+			if (p.length_squared() < 1)
+				return p;
+		}
+	}
+
 	inline vec3<double> random_unit_vector() {
 		while (true) {
 			auto p = vec3<double>::random(-1, 1);

@@ -12,6 +12,7 @@
 #include "materials/lambertian.hpp"
 #include "camera/camera.hpp"
 #include "renderer/integrator.hpp"
+#include "util/common.hpp"
 
 
 void renderToPPM(Aero::RT::Camera::camera& cam, const Aero::RT::Geometry::hittable& world, std::ofstream& file) {
@@ -51,23 +52,68 @@ int main() {
 	// World
 	Aero::RT::Geometry::hittable_list world;
 
-	// define materials
-	auto material_ground = std::make_shared<Aero::RT::Materials::lambertian>(Aero::RT::Utils::color(0.8, 0.8, 0.0));
-	auto material_center = std::make_shared<Aero::RT::Materials::lambertian>(Aero::RT::Utils::color(0.1, 0.2, 0.5));
-	auto material_left = std::make_shared<Aero::RT::Materials::dielectric>(1.50);
-	auto material_bubble = std::make_shared<Aero::RT::Materials::dielectric>(1.00 / 1.50);
-	auto material_right = std::make_shared<Aero::RT::Materials::metal>(Aero::RT::Utils::color(0.8, 0.6, 0.2), 1.0);
+    auto ground_material = std::make_shared<Aero::RT::Materials::lambertian>(Aero::RT::Utils::color(0.5, 0.5, 0.5));
+    world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0, -1000, 0), 1000, ground_material));
 
-	// add spheres with materials to world
-	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0.0, -100.5, -1.0), 100.0, material_ground));
-	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0.0, 0.0, -1.2), 0.5, material_center));
-	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(-1.0, 0.0, -1.0), 0.5, material_left));
-	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(-1.0, 0.0, -1.0), 0.4, material_bubble));
-	world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(1.0, 0.0, -1.0), 0.5, material_right));
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            auto choose_mat = random_value<double>();
+            Aero::RT::Math::point3 center(a + 0.9 * random_value<double>(), 0.2, b + 0.9 * random_value<double>());
 
-	Aero::RT::Camera::camera cam;
-	cam.set_samples_per_pixel(100);
-	cam.set_max_depth(50);
+            if ((center - Aero::RT::Math::point3(4, 0.2, 0)).length() > 0.9) {
+                std::shared_ptr<Aero::RT::Materials::material> sphere_material;
+
+                if (choose_mat < 0.8) {
+                    // diffuse
+                    auto albedo = Aero::RT::Utils::color::random() * Aero::RT::Utils::color::random();
+                    sphere_material = std::make_shared<Aero::RT::Materials::lambertian>(albedo);
+                    world.add(std::make_shared<Aero::RT::Geometry::sphere>(center, 0.2, sphere_material));
+                }
+                else if (choose_mat < 0.95) {
+                    // metal
+                    auto albedo = Aero::RT::Utils::color::random(0.5, 1);
+                    auto fuzz = random_value<double>(0, 0.5);
+                    sphere_material = std::make_shared<Aero::RT::Materials::metal>(albedo, fuzz);
+                    world.add(std::make_shared<Aero::RT::Geometry::sphere>(center, 0.2, sphere_material));
+                }
+                else {
+                    // glass
+                    sphere_material = std::make_shared<Aero::RT::Materials::dielectric>(1.5);
+                    world.add(std::make_shared<Aero::RT::Geometry::sphere>(center, 0.2, sphere_material));
+                }
+            }
+        }
+    }
+
+    auto material1 = std::make_shared<Aero::RT::Materials::dielectric>(1.5);
+    world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0, 1, 0), 1.0, material1));
+
+    auto material2 = std::make_shared<Aero::RT::Materials::lambertian>(Aero::RT::Utils::color(0.4, 0.2, 0.1));
+    world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(-4, 1, 0), 1.0, material2));
+
+    auto material3 = std::make_shared<Aero::RT::Materials::metal>(Aero::RT::Utils::color(0.7, 0.6, 0.5), 0.0);
+    world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(4, 1, 0), 1.0, material3));
+
+    Aero::RT::Camera::camera cam;
+    cam.set_image_width(1200);
+    cam.set_samples_per_pixel(500);
+    cam.set_max_depth(50);
+
+    cam.set_fov(20);
+    cam.set_lookfrom(Aero::RT::Math::point3(13, 2, 3));
+    cam.set_lookat(Aero::RT::Math::point3(0, 0, 0));
+    cam.set_vup(Aero::RT::Math::vec3<double>(0, 1, 0));
+
+    cam.set_defocus_angle(0.6);
+    cam.set_focus_distance(1.0);
+
+    // then call init explicity
+    cam.initialize();
+
+    renderToPPM(cam, world, outFile);
+
+	// then call init explicity
+	cam.initialize();
 
 	renderToPPM(cam, world, outFile);
 
