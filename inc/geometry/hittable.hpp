@@ -9,7 +9,6 @@ namespace Aero::RT::Materials {
 	class material; // forward declaration
 }
 
-
 namespace Aero::RT::Geometry {
 	class hit_record {
 	public:
@@ -19,13 +18,7 @@ namespace Aero::RT::Geometry {
 		double t;
 		bool front_face;
 
-		void set_face_normal(const Math::ray& r, const Math::vec3<double>& outward_normal) {
-			// Sets the hit record normal vector.
-			// Note: the parameter `outward_normal` is assumed to have unit length
-
-			front_face = dot(r.direction(), outward_normal) < 0;
-			normal = front_face ? outward_normal : -outward_normal;
-		}
+		void set_face_normal(const Math::ray& r, const Math::vec3<double>& outward_normal);
 	};
 
 	class hittable { // hittable objects inherit from this

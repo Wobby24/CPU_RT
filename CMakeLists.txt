@@ -18,8 +18,41 @@ set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")  # keep forward slashes and keep on one l
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/inc")
 set(EXTERNAL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ext")
 
+set(CAMERA_SOURCES
+    "${SRC_DIR}/camera/camera.cpp"
+) 
+
+set(GEOMETRY_SOURCES
+    "${SRC_DIR}/geometry/hittable.cpp"
+    "${SRC_DIR}/geometry/hittable_list.cpp"
+    "${SRC_DIR}/geometry/sphere.cpp"
+)
+
+set(MATERIALS_SOURCES
+    "${SRC_DIR}/materials/dielectric.cpp"
+    "${SRC_DIR}/materials/lambertian.cpp"
+    "${SRC_DIR}/materials/material.cpp"
+    "${SRC_DIR}/materials/metal.cpp"
+)
+
+set(MATH_SOURCES
+    "${SRC_DIR}/math/interval.cpp"
+    "${SRC_DIR}/math/ray.cpp"
+    "${SRC_DIR}/math/vec3.cpp"
+)
+
+set(RENDERER_SOURCES
+    "${SRC_DIR}/renderer/integrator.cpp"
+)
+
 # List Source files
 set(PROJECT_SOURCES
+    ${RENDERER_SOURCES}
+    ${MATH_SOURCES}
+    ${MATERIALS_SOURCES}
+    ${GEOMETRY_SOURCES}
+    ${CAMERA_SOURCES}
+    "${SRC_DIR}/CPU_Raytracer.cpp"
     "${SRC_DIR}/main.cpp"
 )
 
