@@ -37,16 +37,11 @@ set(MATERIALS_SOURCES
 set(MATH_SOURCES
     "${SRC_DIR}/math/interval.cpp"
     "${SRC_DIR}/math/ray.cpp"
-    "${SRC_DIR}/math/vec3.cpp"
 )
 
-set(RENDERER_SOURCES
-    "${SRC_DIR}/renderer/integrator.cpp"
-)
 
 # List Source files
 set(PROJECT_SOURCES
-    ${RENDERER_SOURCES}
     ${MATH_SOURCES}
     ${MATERIALS_SOURCES}
     ${GEOMETRY_SOURCES}
