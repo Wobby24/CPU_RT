@@ -31,7 +31,6 @@ set(GEOMETRY_SOURCES
 set(MATERIALS_SOURCES
     "${SRC_DIR}/materials/dielectric.cpp"
     "${SRC_DIR}/materials/lambertian.cpp"
-    "${SRC_DIR}/materials/material.cpp"
     "${SRC_DIR}/materials/metal.cpp"
 )
 

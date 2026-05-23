@@ -4,7 +4,6 @@
 #include "math/ray.hpp"
 #include "geometry/hittable.hpp"
 #include "materials/material.hpp"
-#include "math/vec3.hpp"
 
 namespace Aero::RT::Materials {
 	class lambertian : public material {

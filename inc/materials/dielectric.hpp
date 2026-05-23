@@ -4,7 +4,6 @@
 #include "math/ray.hpp"
 #include "geometry/hittable.hpp"
 #include "materials/material.hpp"
-#include "math/vec3.hpp"
 #include "util/common.hpp"
 
 namespace Aero::RT::Materials {
@@ -16,7 +15,7 @@ namespace Aero::RT::Materials {
 
 	private:
 		// Refractive index in vacuum or air, or the ratio of the material's refractive index over
-// the refractive index of the enclosing media
+		// the refractive index of the enclosing media
 		double refraction_index_;
 
 		static double reflectance(double cosine, double refraction_index);
