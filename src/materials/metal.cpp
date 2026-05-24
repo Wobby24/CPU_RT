@@ -11,7 +11,7 @@ namespace Aero::RT::Materials {
 	bool metal::scatter(const Math::ray& r_in, const Geometry::hit_record& rec, Utils::color& attenuation, Math::ray& scattered) const {
 		Math::vec3<double> reflected = Math::reflect(r_in.direction(), rec.normal);
 		reflected = Math::unit_vector(reflected) + (fuzz_ * Math::random_unit_vector());
-		scattered = Math::ray(rec.p, reflected);
+		scattered = Math::ray(rec.p, reflected, r_in.time());
 		attenuation = albedo_;
 		return (dot(scattered.direction(), rec.normal) > 0);
 	}

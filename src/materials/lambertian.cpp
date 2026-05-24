@@ -10,7 +10,7 @@ namespace Aero::RT::Materials {
 			if (scatter_direction.near_zero())
 				scatter_direction = rec.normal;
 
-			scattered = Math::ray(rec.p, scatter_direction);
+			scattered = Math::ray(rec.p, scatter_direction, r_in.time());
 			attenuation = albedo_;
 			return true;
 	}

@@ -17,8 +17,9 @@ namespace Aero::RT::Camera {
 
         auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();
         auto ray_direction = pixel_sample - ray_origin;
+        auto ray_time = random_value<double>();
 
-        return Math::ray(ray_origin, ray_direction);
+        return Math::ray(ray_origin, ray_direction, ray_time);
 	}
 
     void camera::set_samples_per_pixel(int value) {

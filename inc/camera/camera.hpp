@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math/vec3.hpp"
+#include "math/ray.hpp"
 
 namespace Aero::RT::Camera {
     class camera {

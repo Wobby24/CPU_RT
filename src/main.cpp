@@ -1,6 +1,11 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include <cstdint>
 #include <memory>
+#include <mutex>
+#include <thread>
+#include <atomic>
 
 #include "math/vec3.hpp"
 #include "util/color.hpp"
@@ -13,45 +18,77 @@
 #include "camera/camera.hpp"
 #include "renderer/integrator.hpp"
 #include "util/common.hpp"
+#include "TextureViewer/OGL_RT_TextureView.hpp"
 
+std::vector<uint32_t> framebuffer;
+std::mutex framebufferMutex;
+std::atomic<bool> isRendering{ true };
 
-void renderToPPM(Aero::RT::Camera::camera& cam, const Aero::RT::Geometry::hittable& world, std::ofstream& file) {
+static void raytraceWorker(
+    const Aero::RT::Camera::camera& cam,
+    const Aero::RT::Geometry::hittable_list& world,
+    std::string fileName,
+    int width,
+    int height
+) {
+    std::clog << "\n[Thread Spawned] Core Target: " << width << "x" << height << "\n";
 
-	file << "P3\n" << cam.get_image_width() << " " << cam.get_image_height() << "\n255\n";
+    std::ofstream file(fileName);
+    if (!file) {
+        std::clog << "Thread Error: Could not open output file stream for " << fileName << "\n";
+        return;
+    }
 
-   // #pragma omp parallel for schedule(dynamic) //idk just try it and see what it does since we arent at manual multithreaidng or pools yet
-	for (int j = 0; j < cam.get_image_height(); j++) {
-		for (int i = 0; i < cam.get_image_width(); i++) {
+    file << "P3\n" << width << " " << height << "\n255\n";
 
-			std::clog << "\rScanlines remaining: " << (cam.get_image_height() - j) << ' ' << std::flush;
+    for (int j = 0; j < height; j++) {
+        if (!isRendering) break;
 
-			Aero::RT::Utils::color pixel_color(0, 0, 0);
+        std::clog << "\rScanlines remaining: " << (height - j) << ' ' << std::flush;
 
-			for (int s = 0; s < cam.get_samples_per_pixel(); s++) {
-				auto r = cam.get_ray(i, j);
-				pixel_color += Aero::RT::Renderer::ray_color(r, cam.get_max_depth(), world);
-			}
+        // Temporary local row buffer to optimize lock contention
+        std::vector<uint32_t> rowBuffer(width);
 
-			pixel_color *= cam.get_samples_per_pixel_scale();
-			Aero::RT::Utils::write_color(file, pixel_color);
-		}
-	}
+        for (int i = 0; i < width; i++) {
+            Aero::RT::Utils::color pixel_color(0, 0, 0);
 
-	std::clog << "\rDone.                 \n";
+            for (int s = 0; s < cam.get_samples_per_pixel(); s++) {
+                auto r = cam.get_ray(i, j);
+                pixel_color += Aero::RT::Renderer::ray_color(r, cam.get_max_depth(), world);
+            }
+
+            pixel_color *= cam.get_samples_per_pixel_scale();
+            Aero::RT::Utils::write_color(file, pixel_color);
+
+            double r = Aero::RT::Utils::linear_to_gamma(pixel_color.x());
+            double g = Aero::RT::Utils::linear_to_gamma(pixel_color.y());
+            double b = Aero::RT::Utils::linear_to_gamma(pixel_color.z());
+
+            rowBuffer[i] = Aero::RT::Utils::toRGBA8(r, g, b, 1.0f);
+        }
+
+        // Lock global memory just long enough to copy the fresh row array data safely
+        {
+            std::lock_guard<std::mutex> lock(framebufferMutex);
+            for (int i = 0; i < width; i++) {
+                framebuffer[j * width + i] = rowBuffer[i];
+            }
+        }
+    }
+    std::clog << "\rDone Tracing.                  \n";
 }
 
 int main() {
-	// file (move to fileio eventually)
-	std::string fileName = "render.ppm";
+    std::string fileName = "render.ppm";
 
-	std::ofstream outFile(fileName);
-	if (!outFile) {
-		std::cerr << "Failed to open output file for writing: " << fileName << std::endl;
-		return -1;
-	}
+    std::ofstream outFile(fileName);
+    if (!outFile) {
+        std::cerr << "Failed to open output file for writing: " << fileName << std::endl;
+        return -1;
+    }
 
-	// World
-	Aero::RT::Geometry::hittable_list world;
+    // World Definition
+    Aero::RT::Geometry::hittable_list world;
 
     auto ground_material = std::make_shared<Aero::RT::Materials::lambertian>(Aero::RT::Utils::color(0.5, 0.5, 0.5));
     world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0, -1000, 0), 1000, ground_material));
@@ -65,20 +102,21 @@ int main() {
                 std::shared_ptr<Aero::RT::Materials::material> sphere_material;
 
                 if (choose_mat < 0.8) {
-                    // diffuse
+                    // Diffuse
                     auto albedo = Aero::RT::Utils::color::random() * Aero::RT::Utils::color::random();
                     sphere_material = std::make_shared<Aero::RT::Materials::lambertian>(albedo);
-                    world.add(std::make_shared<Aero::RT::Geometry::sphere>(center, 0.2, sphere_material));
+                    auto center2 = center + Aero::RT::Math::vec3<double>(0, random_value<double>(0, .5), 0);
+                    world.add(std::make_shared<Aero::RT::Geometry::sphere>(center, center2, 0.2, sphere_material));
                 }
                 else if (choose_mat < 0.95) {
-                    // metal
+                    // Metal
                     auto albedo = Aero::RT::Utils::color::random(0.5, 1);
                     auto fuzz = random_value<double>(0, 0.5);
                     sphere_material = std::make_shared<Aero::RT::Materials::metal>(albedo, fuzz);
                     world.add(std::make_shared<Aero::RT::Geometry::sphere>(center, 0.2, sphere_material));
                 }
                 else {
-                    // glass
+                    // Glass
                     sphere_material = std::make_shared<Aero::RT::Materials::dielectric>(1.5);
                     world.add(std::make_shared<Aero::RT::Geometry::sphere>(center, 0.2, sphere_material));
                 }
@@ -95,9 +133,10 @@ int main() {
     auto material3 = std::make_shared<Aero::RT::Materials::metal>(Aero::RT::Utils::color(0.7, 0.6, 0.5), 0.0);
     world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(4, 1, 0), 1.0, material3));
 
+    // Camera Configuration Setup
     Aero::RT::Camera::camera cam;
-    cam.set_image_width(1200);
-    cam.set_samples_per_pixel(500);
+    cam.set_image_width(400);
+    cam.set_samples_per_pixel(100);
     cam.set_max_depth(50);
 
     cam.set_fov(20);
@@ -108,9 +147,39 @@ int main() {
     cam.set_defocus_angle(0.6);
     cam.set_focus_distance(10.0);
 
-	// then call init explicity
-	cam.initialize();
-	renderToPPM(cam, world, outFile);
+    cam.initialize();
 
-	return 0;
+    int width = cam.get_image_width();
+    int height = cam.get_image_height();
+
+    // Resize global buffer safely matching camera dimensions
+    framebuffer.resize(width * height, 0);
+
+    Aero::GL::OGL_RT_TextureViewer texViewer;
+    isRendering = true;
+
+    std::thread tracerThread(raytraceWorker, std::ref(cam), std::ref(world), "render.ppm", width, height);
+
+    // Interactive responsive execution window loop
+    while (!texViewer.shouldWindowClose()) {
+
+        std::vector<uint32_t> bufferCopy;
+
+        // Isolate block loop to perform thread safe vector deep copy fast
+        {
+            std::lock_guard<std::mutex> lock(framebufferMutex);
+            bufferCopy = framebuffer;
+        }
+
+        texViewer.renderToTexture(bufferCopy, width, height);
+
+        // Frame limiter rest slice to avoid maxing out a full primary thread pipeline state
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    }
+    isRendering = false;
+    if (tracerThread.joinable()) {
+        tracerThread.join();
+    }
+
+    return 0;
 }

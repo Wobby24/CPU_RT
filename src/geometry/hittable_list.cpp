@@ -7,6 +7,9 @@
 #include <vector>
 
 namespace Aero::RT::Geometry {
+
+	hittable_list::hittable_list() {}
+
 	hittable_list::hittable_list(std::shared_ptr<hittable> object) { 
 		add(object);
 	}

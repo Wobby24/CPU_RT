@@ -5,7 +5,7 @@
 namespace Aero::RT::Math {
 	class ray {
 	public:
-		ray() {}
+		ray();
 
 		ray(const point3& origin, const vec3<double>& direction, double time);
 
@@ -13,6 +13,8 @@ namespace Aero::RT::Math {
 
 		const point3& origin() const { return orig; }
 		const vec3<double>& direction() const { return dir; }
+
+		double time() const { return tm; }
 
 		point3 at(double t) const { return orig + t * dir; }
 

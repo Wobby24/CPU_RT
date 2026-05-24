@@ -12,9 +12,13 @@ namespace Aero::RT::Geometry {
 		// avoid using specific namespace with material to ensure forward declaration doesn't break
 		sphere(const Math::point3& center, double radius, std::shared_ptr<Materials::material> mat);
 
+		// moving sphere
+		sphere(const Math::point3& center1, const Math::point3& center2, double radius,
+			std::shared_ptr<Materials::material> mat);
+
 		bool hit(const Math::ray& r, Math::interval ray_t, hit_record& rec) const override;
 	private:
-		Math::point3 center_;
+		Math::ray center_;
 		double radius_;
 		std::shared_ptr<Materials::material> mat_;
 	};

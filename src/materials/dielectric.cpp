@@ -28,11 +28,11 @@ namespace Aero::RT::Materials {
 			}
 
 
-			scattered = Math::ray(rec.p, direction);
+			scattered = Math::ray(rec.p, direction, r_in.time());
 			return true;
     }
 
-    static double reflectance(double cosine, double refraction_index) {
+    double dielectric::reflectance(double cosine, double refraction_index) {
 		// Use Schlick's approximation for reflectance.
 		auto r0 = (1 - refraction_index) / (1 + refraction_index);
 		r0 = r0 * r0;
