@@ -11,6 +11,12 @@ namespace Aero::RT::Math {
 		: min(min), max(max) {
 	}
 
+	interval::interval(const interval& a, const interval& b) {
+		// Create the interval tightly enclosing the 2 input intervals
+		min = a.min <= b.min ? a.min : b.min;
+		max = a.max >= b.max ? a.max : b.max;
+	}
+
 	double interval::size() const {
 		return max - min;
 	}

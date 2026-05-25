@@ -1,13 +1,25 @@
 #include "geometry/sphere.hpp"
+#include "math/aabb.hpp"
 #include <memory>
 
 namespace Aero::RT::Geometry {
-	sphere::sphere(const Math::point3& center, double radius, std::shared_ptr<Materials::material> mat) :
-	 center_(center, Math::vec3<double>(0,0,0)), radius_(std::fmax(0, radius)), mat_(mat) {}
+	//Static sphere 
+	sphere::sphere(const Math::point3& static_center, double radius, std::shared_ptr<Materials::material> mat) :
+	 center_(static_center, Math::vec3<double>(0,0,0)), radius_(std::fmax(0, radius)), mat_(mat) 
+	 {
+		auto rvec = Math::vec3<double>(radius, radius, radius);
+		bbox = Math::aabb(static_center - rvec, static_center + rvec);
+	 }
 
+	// Moving sphere, center 1 and center 2 is its starting and end position
 	sphere::sphere(const Math::point3& center1, const Math::point3& center2, double radius,
 		std::shared_ptr<Materials::material> mat)
-		: center_(center1, center2 - center1), radius_(std::fmax(0, radius)), mat_(mat) {
+		: center_(center1, center2 - center1), radius_(std::fmax(0, radius)), mat_(mat) 
+	{
+		auto rvec = Math::vec3<double>(radius, radius, radius);
+		Math::aabb box1(center_.at(0) - rvec, center_.at(0) + rvec);
+		Math::aabb box2(center_.at(1) - rvec, center_.at(1) + rvec);
+		bbox = Math::aabb(box1, box2);
 	}
 
 
@@ -40,4 +52,8 @@ namespace Aero::RT::Geometry {
 
 				return true;
 		}
+
+	Math::aabb sphere::bounding_box() const {
+		return bbox;
+	}
 }

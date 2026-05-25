@@ -1,5 +1,6 @@
 #include "geometry/hittable_list.hpp"
 #include "geometry/hittable.hpp"
+#include "math/aabb.hpp"
 #include "math/ray.hpp"
 #include "math/interval.hpp"
 
@@ -20,6 +21,7 @@ namespace Aero::RT::Geometry {
 
 	void hittable_list::add(std::shared_ptr<hittable> object) {
 		objects.push_back(object);
+		bbox = Math::aabb(bbox, object->bounding_box());
 	}
 
 	bool hittable_list::hit(const Math::ray& r, Math::interval ray_t, Geometry::hit_record& rec) const {
@@ -36,5 +38,9 @@ namespace Aero::RT::Geometry {
 		}
 
 		return hit_anything;
+	}
+
+	Math::aabb hittable_list::bounding_box() const {
+		return bbox;
 	}
 }

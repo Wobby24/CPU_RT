@@ -10,6 +10,7 @@ namespace Aero::RT::Math {
 
 		aabb(); // Default AABB is empty because intervals are empty by default
 		aabb(const interval& x, const interval& y, const interval& z);
+		aabb(const aabb& box0, const aabb& box1);
 		aabb(const point3& a, const point3& b);
 
 		const interval& axis_interval(int n) const;

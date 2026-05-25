@@ -9,15 +9,16 @@
 
 #include "math/vec3.hpp"
 #include "util/color.hpp"
+#include "util/common.hpp"
 #include "geometry/hittable.hpp"
 #include "geometry/hittable_list.hpp"
 #include "geometry/sphere.hpp" 
+#include "geometry/bvh.hpp"
 #include "materials/metal.hpp"
 #include "materials/dielectric.hpp"
 #include "materials/lambertian.hpp"
 #include "camera/camera.hpp"
 #include "renderer/integrator.hpp"
-#include "util/common.hpp"
 #include "TextureViewer/OGL_RT_TextureView.hpp"
 
 std::vector<uint32_t> framebuffer;
@@ -132,6 +133,8 @@ int main() {
 
     auto material3 = std::make_shared<Aero::RT::Materials::metal>(Aero::RT::Utils::color(0.7, 0.6, 0.5), 0.0);
     world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(4, 1, 0), 1.0, material3));
+
+    world = Aero::RT::Geometry::hittable_list(std::make_shared<Aero::RT::Geometry::bvh_node>(world));
 
     // Camera Configuration Setup
     Aero::RT::Camera::camera cam;

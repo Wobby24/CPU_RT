@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hittable.hpp"
+#include "math/aabb.hpp"
 #include "math/ray.hpp"
 #include "math/interval.hpp"
 
@@ -20,5 +21,9 @@ namespace Aero::RT::Geometry {
 		void add(std::shared_ptr<hittable> object);
 
 		bool hit(const Math::ray& r, Math::interval ray_t, Geometry::hit_record& rec) const override;
+
+		Math::aabb bounding_box() const override;
+	private:
+		Math::aabb bbox;
 	};
 }
