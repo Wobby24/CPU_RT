@@ -2,10 +2,10 @@
 #include "math/aabb.hpp"
 #include "geometry/hittable.hpp"
 #include "geometry/hittable_list.hpp"
-#include "util/common.hpp"
 #include <vector>
 #include <memory>
 #include <algorithm>
+
 
 namespace Aero::RT::Geometry {
     bvh_node::bvh_node(hittable_list list) : bvh_node(list.objects, 0, list.objects.size()) {
