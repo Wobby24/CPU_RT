@@ -29,6 +29,11 @@ namespace Aero::RT::Math {
 		return x;
 	}
 
+	interval interval::expand(double delta) const {
+		auto padding = delta / 2;
+		return interval(min - padding, max + padding);
+	}
+
 	const interval interval::empty(+infinity, -infinity);
 	const interval interval::universe(-infinity, +infinity);
 

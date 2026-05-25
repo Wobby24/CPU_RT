@@ -58,6 +58,7 @@ set(MATERIALS_SOURCES
 set(MATH_SOURCES
     "${SRC_DIR}/math/interval.cpp"
     "${SRC_DIR}/math/ray.cpp"
+    "${SRC_DIR}/math/aabb.cpp"
 )
 
 set(UTIL_SOURCES 

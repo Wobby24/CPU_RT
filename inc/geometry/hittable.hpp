@@ -2,6 +2,7 @@
 
 #include "math/ray.hpp"
 #include "math/vec3.hpp"
+#include "math/aabb.hpp"
 #include "math/interval.hpp"
 #include <memory>
 
@@ -26,5 +27,7 @@ namespace Aero::RT::Geometry {
 		virtual ~hittable() = default;
 
 		virtual bool hit(const Math::ray& r, Math::interval ray_t, hit_record& rec) const = 0;
+
+		virtual Math::aabb bounding_box() const = 0;
 	};
 }
