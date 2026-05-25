@@ -47,6 +47,7 @@ set(GEOMETRY_SOURCES
     "${SRC_DIR}/geometry/hittable.cpp"
     "${SRC_DIR}/geometry/hittable_list.cpp"
     "${SRC_DIR}/geometry/sphere.cpp"
+    "${SRC_DIR}/geometry/bvh.cpp"
 )
 
 set(MATERIALS_SOURCES
