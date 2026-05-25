@@ -15,5 +15,9 @@ namespace Aero::RT::Math {
 
 		const interval& axis_interval(int n) const;
 		bool hit(const ray& r, interval ray_t) const;
+		int longest_axis() const;
+
+		static const aabb empty;
+		static const aabb universe;
 	};
 }
