@@ -36,7 +36,7 @@ bld/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
-
+.lib
 # Build results on 'Bin' directories
 **/[Bb]in/*
 # Uncomment if you have tasks that rely on *.refresh files to move binaries
@@ -422,8 +422,8 @@ FodyWeavers.xsd
 
 
 #Libraries, these should all be added via CMake or otherwise
-*.dll
-*.lib
-*.a  
-*.so 
-*.dylib
+#*.dll
+#*.lib
+#*.a  
+#*.so 
+#*.dylib
