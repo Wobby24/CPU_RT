@@ -66,6 +66,7 @@ set(PROJECT_SOURCES
     ${CAMERA_SOURCES}
     #"${SRC_DIR}/CPU_Raytracer.cpp"
     "${SRC_DIR}/main.cpp"
+    ${UTIL_SOURCES}
 )
 
 

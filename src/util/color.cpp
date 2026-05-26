@@ -1,6 +1,13 @@
 #include "util/color.hpp"
+#include "math/vec3.hpp"
+#include "math/interval.hpp"
+#include <cstdint>
+#include <iostream>
+#include <algorithm>
 
 namespace Aero::RT::Utils {
+	using color = Math::vec3<double>;
+
 	double linear_to_gamma(double linear_component)
 	{
 		if (linear_component > 0)
@@ -27,5 +34,21 @@ namespace Aero::RT::Utils {
 
 		// Write out the pixel color components.
 		out << rbyte << ' ' << gbyte << ' ' << bbyte << '\n';
+	}
+
+	uint32_t toRGBA8(float r, float g, float b, float a)
+	{
+		auto toByte = [](float c)
+			{
+				c = std::clamp(c, 0.0f, 0.999f);
+				return static_cast<uint32_t>(c * 255.0f);
+			};
+
+		uint32_t R = toByte(r);
+		uint32_t G = toByte(g);
+		uint32_t B = toByte(b);
+		uint32_t A = toByte(a);
+
+		return (R << 24) | (G << 16) | (B << 8) | A;
 	}
 }
