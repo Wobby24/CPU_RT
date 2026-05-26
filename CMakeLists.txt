@@ -11,7 +11,7 @@ include(FetchContent)
 FetchContent_Declare(
     OGL_RT_TextureView
     GIT_REPOSITORY https://github.com/Wobby24/OGL_RT_TextureView.git
-    GIT_TAG        v1.0 
+    GIT_TAG        v1.0.1
 )
 
 FetchContent_MakeAvailable(OGL_RT_TextureView)
