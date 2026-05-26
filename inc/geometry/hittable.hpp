@@ -17,6 +17,8 @@ namespace Aero::RT::Geometry {
 		Math::vec3<double> normal;
 		std::shared_ptr<Materials::material> mat;
 		double t;
+		double u;
+		double v;
 		bool front_face;
 
 		void set_face_normal(const Math::ray& r, const Math::vec3<double>& outward_normal);

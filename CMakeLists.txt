@@ -16,7 +16,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(OGL_RT_TextureView)
 
-
 # Default to Debug
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
@@ -58,17 +57,22 @@ set(UTIL_SOURCES
     "${SRC_DIR}/util/color.cpp"
 )
 
+set(TEXTURE_SOURCES
+    "${SRC_DIR}/textures/solid_color.cpp"
+    "${SRC_DIR}/textures/checker_texture.cpp"
+)
+
 # List Source files
 set(PROJECT_SOURCES
     ${MATH_SOURCES}
     ${MATERIALS_SOURCES}
     ${GEOMETRY_SOURCES}
     ${CAMERA_SOURCES}
+    ${UTIL_SOURCES}
+    ${TEXTURE_SOURCES}
     #"${SRC_DIR}/CPU_Raytracer.cpp"
     "${SRC_DIR}/main.cpp"
-    ${UTIL_SOURCES}
 )
-
 
 # Post-build copy: only valid after the target exists
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

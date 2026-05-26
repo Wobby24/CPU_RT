@@ -17,9 +17,11 @@
 #include "materials/metal.hpp"
 #include "materials/dielectric.hpp"
 #include "materials/lambertian.hpp"
+#include "textures/checker_texture.hpp"
 #include "camera/camera.hpp"
 #include "renderer/integrator.hpp"
-#include "TextureViewer/OGL_RT_TextureView.hpp"
+#include "OGL_RT_TextureView.hpp"
+
 
 std::vector<uint32_t> framebuffer;
 std::mutex framebufferMutex;
@@ -32,11 +34,11 @@ static void raytraceWorker(
     int width,
     int height
 ) {
-    std::clog << "\n[Thread Spawned] Core Target: " << width << "x" << height << "\n";
+    std::clog << "\nRendering starting with resolution parameters: " << width << "x" << height << "\n";
 
     std::ofstream file(fileName);
     if (!file) {
-        std::clog << "Thread Error: Could not open output file stream for " << fileName << "\n";
+        std::clog << "Could not open output file stream for " << fileName << "\n";
         return;
     }
 
@@ -83,16 +85,17 @@ int main() {
     std::string fileName = "render.ppm";
 
     std::ofstream outFile(fileName);
-    if (!outFile) {
-        std::cerr << "Failed to open output file for writing: " << fileName << std::endl;
-        return -1;
-    }
+    // check done in rt function
+   /*if (!outFile) {
+       std::cerr << "Failed to open output file for writing: " << fileName << std::endl;
+       return -1;
+    }*/ 
 
     // World Definition
     Aero::RT::Geometry::hittable_list world;
 
-    auto ground_material = std::make_shared<Aero::RT::Materials::lambertian>(Aero::RT::Utils::color(0.5, 0.5, 0.5));
-    world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0, -1000, 0), 1000, ground_material));
+    auto checker = std::make_shared<Aero::RT::Textures::checker_texture>(0.32, Aero::RT::Utils::color(.2, .3, .1), Aero::RT::Utils::color(.9, .9, .9));
+    world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0, -1000, 0), 1000, std::make_shared<Aero::RT::Materials::lambertian>(checker)));
 
     for (int a = -11; a < 11; a++) {
         for (int b = -11; b < 11; b++) {

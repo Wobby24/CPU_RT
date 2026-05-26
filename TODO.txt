@@ -1,3 +1,2 @@
 # TODO
 
-1. Build OGL texture viewer lib for linux (proabbly need to make a git repo for it then you could have the cmake for this fetch it and build it)
