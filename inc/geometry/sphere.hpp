@@ -21,6 +21,8 @@ namespace Aero::RT::Geometry {
 
 		Math::aabb bounding_box() const override;
 	private:
+		static void get_sphere_uv(const Math::point3& p, double& u, double& v);
+
 		Math::ray center_;
 		double radius_;
 		std::shared_ptr<Materials::material> mat_;

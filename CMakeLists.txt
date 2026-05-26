@@ -55,11 +55,13 @@ set(MATH_SOURCES
 
 set(UTIL_SOURCES 
     "${SRC_DIR}/util/color.cpp"
+    "${SRC_DIR}/util/image_loader.cpp"
 )
 
 set(TEXTURE_SOURCES
     "${SRC_DIR}/textures/solid_color.cpp"
     "${SRC_DIR}/textures/checker_texture.cpp"
+    "${SRC_DIR}/textures/image_texture.cpp"
 )
 
 # List Source files
@@ -84,6 +86,13 @@ set(PROJECT_SOURCES
 # Executable
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 
+# Post-build copy: Copies the 'res' folder into the same directory as the executable
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/res"
+    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/res"
+)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE  OGL_RT_TextureView::OGL_RT_TextureView)
 
 # Includes
@@ -96,6 +105,7 @@ target_include_directories(${PROJECT_NAME}
 file(GLOB_RECURSE PROJECT_HEADERS
     "${INCLUDE_DIR}/*.h"
     "${INCLUDE_DIR}/*.hpp"
+    #maybe add ext?
 )
 
 # Debug macro

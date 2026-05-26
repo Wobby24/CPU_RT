@@ -14,6 +14,7 @@
 #include "geometry/hittable_list.hpp"
 #include "demo_scenes/bouncing_spheres.hpp"
 #include "demo_scenes/checkered_spheres.hpp"
+#include "demo_scenes/earth.hpp"
 #include "camera/camera.hpp"
 #include "renderer/integrator.hpp"
 #include "OGL_RT_TextureView.hpp"
@@ -88,9 +89,10 @@ int main() {
 
     Aero::RT::Camera::camera cam;
    
-    switch (2) {
-    case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam);  break;
-    case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam); break;
+    switch (3) {
+        case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam);  break;
+        case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam); break;
+        case 3: Aero::RT::Demo_Scenes::earth(world, cam); break;
     }
 
     cam.initialize();
