@@ -5,24 +5,16 @@ project(CPURaytracer VERSION 1.0 LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
+# FetchContent
 include(FetchContent)
 
 FetchContent_Declare(
-    glfw
-    GIT_REPOSITORY https://github.com/glfw/glfw.git
-    GIT_TAG        3.4  # Or "master" for the latest, but 3.4 is stable
-    GIT_SHALLOW    TRUE
+    OGL_RT_TextureView
+    GIT_REPOSITORY https://github.com/Wobby24/OGL_RT_TextureView.git
+    GIT_TAG        v1.0 
 )
 
-# Disable building GLFW documentation and tests to speed up your build
-set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "")
-set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "")
-set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "")
-
-FetchContent_MakeAvailable(glfw)
-
-find_package(OpenGL REQUIRED)
+FetchContent_MakeAvailable(OGL_RT_TextureView)
 
 
 # Default to Debug
@@ -84,22 +76,10 @@ set(PROJECT_SOURCES
    # "$<TARGET_FILE_DIR:${PROJECT_NAME}>/rt_output"
 #)
 
-add_library(OGL_RT_TextureView STATIC IMPORTED GLOBAL)
-
-set_target_properties(OGL_RT_TextureView PROPERTIES
-    IMPORTED_LOCATION
-        "${LIBRARY_DIR}/OGL_RT_TextureView.lib"
-
-    INTERFACE_INCLUDE_DIRECTORIES
-        "${EXTERNAL_INCLUDE_DIR}"
-    
-    INTERFACE_LINK_LIBRARIES
-        "glfw;OpenGL::GL"
-)
 # Executable
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE OGL_RT_TextureView)
+target_link_libraries(${PROJECT_NAME} PRIVATE  OGL_RT_TextureView::OGL_RT_TextureView)
 
 # Includes
 target_include_directories(${PROJECT_NAME}
