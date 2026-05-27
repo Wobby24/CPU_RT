@@ -19,5 +19,7 @@ namespace Aero::RT::Math {
 
 		static const aabb empty;
 		static const aabb universe;
+	private:
+		void pad_to_minimus();
 	};
 }
