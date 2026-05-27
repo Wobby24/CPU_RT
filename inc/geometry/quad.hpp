@@ -16,10 +16,14 @@ namespace Aero::RT::Geometry {
         virtual void set_bounding_box();
         Math::aabb bounding_box() const override;
         bool hit(const Math::ray& r, Math::interval ray_t, hit_record& rec) const override;
+        virtual bool is_interior(double a, double b, hit_record& rec) const;
     private:
-        Math::point3& Q_;
+        Math::point3 Q_;
         Math::vec3<double> u_, v_;
+        Math::vec3<double> w_;
         std::shared_ptr<Materials::material> mat_;
         Math::aabb bbox_;
+        Math::vec3<double> normal_;
+        double D_;
     };
 }
