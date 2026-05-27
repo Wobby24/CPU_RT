@@ -1,3 +1,5 @@
+#pragma once
+
 #include "util/perlin_noise.hpp"
 #include "textures/texture.hpp"
 #include "util/color.hpp"

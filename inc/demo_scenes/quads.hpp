@@ -11,8 +11,7 @@
 #include "geometry/hittable_list.hpp"
 #include "geometry/quad.hpp" 
 #include "geometry/bvh.hpp"
-#include "materials/metal.hpp"
-#include "materials/dielectric.hpp"
+#include "textures/noise_texture.hpp"
 #include "materials/lambertian.hpp"
 #include "camera/camera.hpp"
 
