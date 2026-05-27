@@ -56,12 +56,14 @@ set(MATH_SOURCES
 set(UTIL_SOURCES 
     "${SRC_DIR}/util/color.cpp"
     "${SRC_DIR}/util/image_loader.cpp"
+    "${SRC_DIR}/util/perlin_noise.cpp"
 )
 
 set(TEXTURE_SOURCES
     "${SRC_DIR}/textures/solid_color.cpp"
     "${SRC_DIR}/textures/checker_texture.cpp"
     "${SRC_DIR}/textures/image_texture.cpp"
+    "${SRC_DIR}/textures/noise_texture.cpp"
 )
 
 # List Source files

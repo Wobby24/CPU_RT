@@ -37,7 +37,10 @@ namespace Aero::RT::Math {
 		}
 
 		vec3& operator/=(T t) {
-			return *this *= 1 / t;
+			e[0] /= t;
+			e[1] /= t;
+			e[2] /= t;
+			return *this;
 		}
 
 		double length_squared() const {
