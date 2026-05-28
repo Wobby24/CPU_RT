@@ -17,9 +17,9 @@ namespace Aero::RT::Geometry {
         Math::aabb bounding_box() const override;
         bool hit(const Math::ray& r, Math::interval ray_t, hit_record& rec) const override;
     private:
-        Math::point3& Q;
-        Math::vec3<double> u, v;
-        std::shared_ptr<Materials::material> mat;
-        Math::aabb bbox;
+        Math::point3& Q_;
+        Math::vec3<double> u_, v_;
+        std::shared_ptr<Materials::material> mat_;
+        Math::aabb bbox_;
     };
 }
