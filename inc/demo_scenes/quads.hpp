@@ -10,6 +10,7 @@
 #include "geometry/hittable.hpp"
 #include "geometry/hittable_list.hpp"
 #include "geometry/quad.hpp" 
+#include "geometry/triangle.hpp"
 #include "geometry/bvh.hpp"
 #include "textures/noise_texture.hpp"
 #include "materials/lambertian.hpp"

@@ -40,6 +40,7 @@ set(GEOMETRY_SOURCES
     "${SRC_DIR}/geometry/sphere.cpp"
     "${SRC_DIR}/geometry/bvh.cpp"
     "${SRC_DIR}/geometry/quad.cpp"
+    "${SRC_DIR}/geometry/triangle.cpp"
 )
 
 set(MATERIALS_SOURCES
