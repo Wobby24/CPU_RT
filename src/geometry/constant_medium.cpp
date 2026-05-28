@@ -1,5 +1,5 @@
 #include "geometry/constant_medium.hpp"
-#include "hittable.hpp"
+#include "geometry/hittable.hpp"
 #include "materials/material.hpp"
 #include "materials/isotropic.hpp"
 #include "textures/texture.hpp"

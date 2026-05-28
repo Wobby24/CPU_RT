@@ -42,6 +42,7 @@ set(GEOMETRY_SOURCES
     "${SRC_DIR}/geometry/quad.cpp"
     "${SRC_DIR}/geometry/triangle.cpp"
     "${SRC_DIR}/geometry/translate.cpp"
+    "${SRC_DIR}/geometry/constant_medium.cpp"
 )
 
 set(MATERIALS_SOURCES
