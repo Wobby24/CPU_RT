@@ -10,7 +10,6 @@
 #include "geometry/hittable.hpp"
 #include "geometry/hittable_list.hpp"
 #include "geometry/quad.hpp" 
-#include "geometry/triangle.hpp"
 #include "geometry/bvh.hpp"
 #include "textures/noise_texture.hpp"
 #include "materials/lambertian.hpp"
@@ -39,6 +38,7 @@ namespace Aero::RT::Demo_Scenes {
         cam.set_image_width(400);
         cam.set_samples_per_pixel(100);
         cam.set_max_depth(50);
+        cam.set_background_color(Utils::color(0.70, 0.80, 1.00));
 
         cam.set_fov(80);
         cam.set_lookfrom(Math::point3(0, 0, 9));

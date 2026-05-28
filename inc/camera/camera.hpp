@@ -2,6 +2,7 @@
 
 #include "math/vec3.hpp"
 #include "math/ray.hpp"
+#include "util/color.hpp"
 
 namespace Aero::RT::Camera {
     class camera {
@@ -16,6 +17,7 @@ namespace Aero::RT::Camera {
         int get_image_width() const { return image_width; }
         int get_samples_per_pixel() const { return samples_per_pixel; }
         int get_max_depth() const { return max_depth; }
+        Utils::color get_background_Color() const { return background; }
         double get_samples_per_pixel_scale() const { return pixel_samples_scale; }
         double get_fov() const { return vfov; }
 
@@ -24,6 +26,7 @@ namespace Aero::RT::Camera {
         void set_aspect_ratio(double value) { aspect_ratio = value; }
         void set_samples_per_pixel(int value);
         void set_max_depth(int value) { max_depth = value; }
+        void set_background_color(Utils::color value) { background = value; }
         void set_fov(double value) { vfov = value; }
 
         void set_lookat(Math::point3 data) { lookat = data; }
@@ -41,6 +44,7 @@ namespace Aero::RT::Camera {
         int image_height = 0;
         int samples_per_pixel = 10; // count of random samples for each pixel
         int max_depth = 10; // maximum number of ray bounces into scene
+        Utils::color background; // Scene background color
         double pixel_samples_scale;  // Color scale factor for a sum of pixel samples
         double vfov = 90; // Vertical view angle (field of view)
 

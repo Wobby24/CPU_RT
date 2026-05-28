@@ -18,6 +18,7 @@
 #include "demo_scenes/earth.hpp"
 #include "demo_scenes/perlin_spheres.hpp"
 #include "demo_scenes/quads.hpp"
+#include "demo_scenes/simple_light.hpp"
 
 #include "camera/camera.hpp"
 #include "renderer/integrator.hpp"
@@ -59,7 +60,7 @@ static void raytraceWorker(
 
             for (int s = 0; s < cam.get_samples_per_pixel(); s++) {
                 auto r = cam.get_ray(i, j);
-                pixel_color += Aero::RT::Renderer::ray_color(r, cam.get_max_depth(), world);
+                pixel_color += Aero::RT::Renderer::ray_color(r, cam.get_max_depth(), world, cam.get_background_Color());
             }
 
             pixel_color *= cam.get_samples_per_pixel_scale();
@@ -93,12 +94,13 @@ int main() {
 
     Aero::RT::Camera::camera cam;
    
-    switch (5) {
+    switch (6) {
         case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam);  break;
         case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam); break;
         case 3: Aero::RT::Demo_Scenes::earth(world, cam); break;
         case 4: Aero::RT::Demo_Scenes::perlin_spheres(world, cam); break;
         case 5: Aero::RT::Demo_Scenes::quads(world, cam); break;
+        case 6: Aero::RT::Demo_Scenes::simple_lights(world, cam); break;
     }
 
     cam.initialize();

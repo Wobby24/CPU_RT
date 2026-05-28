@@ -67,6 +67,7 @@ namespace Aero::RT::Demo_Scenes {
         cam.set_image_width(400);
         cam.set_samples_per_pixel(100);
         cam.set_max_depth(50);
+        cam.set_background_color(Utils::color(0.70, 0.80, 1.00));
 
         cam.set_fov(20);
         cam.set_lookfrom(Aero::RT::Math::point3(13, 2, 3));

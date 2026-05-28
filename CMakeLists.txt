@@ -47,6 +47,7 @@ set(MATERIALS_SOURCES
     "${SRC_DIR}/materials/dielectric.cpp"
     "${SRC_DIR}/materials/lambertian.cpp"
     "${SRC_DIR}/materials/metal.cpp"
+    "${SRC_DIR}/materials/diffuse_light.cpp"
 )
 
 set(MATH_SOURCES
