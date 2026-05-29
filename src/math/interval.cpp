@@ -40,6 +40,15 @@ namespace Aero::RT::Math {
 		return interval(min - padding, max + padding);
 	}
 
+	interval operator+(double displacement, const interval& ival)
+	{
+		return ival + displacement;
+	}
+
+	interval operator+(const interval& ival, double displacement) {
+		return interval(ival.min + displacement, ival.max + displacement);
+	}
+
 	const interval interval::empty(+infinity, -infinity);
 	const interval interval::universe(-infinity, +infinity);
 

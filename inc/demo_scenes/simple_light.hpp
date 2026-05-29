@@ -20,10 +20,12 @@
 namespace Aero::RT::Demo_Scenes {
     void simple_lights(Geometry::hittable_list& world, Camera::camera& cam) {
         auto pertext = std::make_shared<Textures::noise_texture>(4);
+        auto difflight = std::make_shared<Materials::diffuse_light>(Utils::color(4, 4, 4));
+        
+        world.add(std::make_shared<Geometry::sphere>(Math::point3(0, 7, 0), 2, difflight));
         world.add(std::make_shared<Geometry::sphere>(Math::point3(0, -1000, 0), 1000, std::make_shared<Materials::lambertian>(pertext)));
         world.add(std::make_shared<Geometry::sphere>(Math::point3(0, 2, 0), 2, std::make_shared<Materials::lambertian>(pertext)));
 
-        auto difflight = std::make_shared<Materials::diffuse_light>(Utils::color(4, 4, 4));
         world.add(std::make_shared<Geometry::quad>(Math::point3(3, 1, -2), Math::vec3<double>(2, 0, 0), Math::vec3<double>(0, 2, 0), difflight));
 
         world = Aero::RT::Geometry::hittable_list(std::make_shared<Aero::RT::Geometry::bvh_node>(world));

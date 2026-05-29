@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hittable.hpp"
+#include "hittable_list.hpp"
 #include "math/vec3.hpp"
 #include "math/aabb.hpp"
 #include "math/ray.hpp"
@@ -26,4 +27,7 @@ namespace Aero::RT::Geometry {
         Math::vec3<double> normal_;
         double D_;
     };
+
+    // Basic helper function that returns a list of quads which forms a box
+    std::shared_ptr<hittable_list> box(const Math::point3& a, const Math::point3& b, std::shared_ptr<Materials::material> mat);
 }

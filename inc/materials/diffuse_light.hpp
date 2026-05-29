@@ -1,3 +1,5 @@
+#pragma once
+
 #include "material.hpp"
 #include "textures/texture.hpp"
 #include "textures/solid_color.hpp"

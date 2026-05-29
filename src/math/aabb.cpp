@@ -67,6 +67,14 @@ namespace Aero::RT::Math {
         if (z.size() < delta) z = z.expand(delta);
 	}
 
+	aabb operator+(const aabb& bbox, const Math::vec3<double>& offset) {
+		return aabb(bbox.x + offset.x(), bbox.y + offset.y(), bbox.z + offset.z());
+	}
+
+	aabb operator+(const Math::vec3<double>& offset, const aabb& bbox) {
+		return bbox + offset;
+	}
+
 	const aabb aabb::empty    = aabb(interval::empty,    interval::empty,    interval::empty);
 	const aabb aabb::universe = aabb(interval::universe, interval::universe, interval::universe);
 }

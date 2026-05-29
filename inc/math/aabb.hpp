@@ -22,4 +22,8 @@ namespace Aero::RT::Math {
 	private:
 		void pad_to_minimus();
 	};
+
+	aabb operator+(const aabb& bbox, const Math::vec3<double>& offset);
+
+	aabb operator+(const Math::vec3<double>& offset, const aabb& bbox);
 }
