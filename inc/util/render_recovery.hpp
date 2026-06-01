@@ -5,8 +5,8 @@
 #include <string>
 
 namespace Aero::RT::Utils {
-	static int recover_ppm_render(const std::string & filename, int width, int height) {
-		std::ifstream file(filename);
+    static int recover_ppm_render(const std::string& filename, int width, int height, int tile_size) {
+        std::ifstream file(filename);
 
         if (!file.good()) {
             std::ofstream out_file(filename);
@@ -14,27 +14,27 @@ namespace Aero::RT::Utils {
             out_file.close();
 
             std::clog << "\nNo existing render found. Starting fresh!\n";
-            return height - 1;
+            return 0; // 0 means start at tiles[0]
         }
 
         std::string dummy;
         int line_count = 0;
         while (std::getline(file, dummy)) {
-            line_count++;
+            if (!dummy.empty()) line_count++;
         }
         file.close();
 
-        // 3 lines for the PPM header
-        int pixel_lines = line_count - 3;
+        int pixel_lines = line_count - 3; // Subtract PPM header lines
 
-        // In case the crash happened midway through writing a single scanline,
-        // we only count completely finished scanlines.
-        int scanlines_completed = pixel_lines / width;
+        // Calculate how many total individual pixels are saved on disk
+        int total_pixels_saved = pixel_lines;
 
-        // Convert completed scanlines into the loop's 'j' index.
-        // (Since j counts DOWN from height-1 to 0)
-        int resume_j = (height - 1) - scanlines_completed;
+        // Calculate the area of one standard tile (e.g., 16 * 16 = 256)
+        int pixels_per_tile = tile_size * tile_size;
 
-        return resume_j;
-	}
+        // The number of completely finished tiles is our resume index!
+        int completed_tiles = total_pixels_saved / pixels_per_tile;
+
+        return completed_tiles;
+    }
 }

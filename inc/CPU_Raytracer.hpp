@@ -13,6 +13,7 @@
 #include "geometry/hittable_list.hpp"
 #include "camera/camera.hpp"
 #include "renderer/renderOptions.hpp"
+#include "renderer/tile.hpp"
 
 namespace Aero::RT {
 
@@ -21,7 +22,7 @@ namespace Aero::RT {
 		Aero_CPU_RT();
 		~Aero_CPU_RT();
 
-		void render(const Aero::RT::Camera::camera& cam,
+		void render(const std::vector<Renderer::tile>& tiles, const Aero::RT::Camera::camera& cam,
 			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
 
 		void copy_framebuffer(std::vector<uint32_t>& dest_buffer) {
@@ -37,9 +38,11 @@ namespace Aero::RT {
 		std::atomic<bool> isRendering{ false };
 
 		// main render method will use these after determining which it needs to do 
-		void renderNew(const Aero::RT::Camera::camera& cam,
+		void renderNewScanline(const Aero::RT::Camera::camera& cam,
 			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
 		void resumeRender(const Aero::RT::Camera::camera& cam,
+			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
+		void renderNew(const std::vector<Renderer::tile>& tiles, const Aero::RT::Camera::camera& cam,
 			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
 	};
 }
