@@ -16,7 +16,7 @@
 #include "camera/camera.hpp"
 
 namespace Aero::RT::Demo_Scenes {
-    void quads(Geometry::hittable_list& world, Camera::camera& cam) {
+    void quads(Geometry::hittable_list& world, Camera::camera& cam, renderOptions& ctx) {
         // Materials
         auto left_red     = std::make_shared<Materials::lambertian>(Utils::color(1.0, 0.2, 0.2));
         auto back_green   = std::make_shared<Materials::lambertian>(Utils::color(0.2, 1.0, 0.2));
@@ -34,11 +34,11 @@ namespace Aero::RT::Demo_Scenes {
 
         world = Aero::RT::Geometry::hittable_list(std::make_shared<Aero::RT::Geometry::bvh_node>(world));
 
-        cam.set_aspect_ratio(1.0);
-        cam.set_image_width(400);
-        cam.set_samples_per_pixel(100);
-        cam.set_max_depth(50);
-        cam.set_background_color(Utils::color(0.70, 0.80, 1.00));
+        ctx.width = 400;
+        ctx.height = 225;
+        ctx.samples_per_pixel = 100;
+        ctx.max_depth = 50;
+        ctx.background = Utils::color(0.70, 0.80, 1.00);
 
         cam.set_fov(80);
         cam.set_lookfrom(Math::point3(0, 0, 9));

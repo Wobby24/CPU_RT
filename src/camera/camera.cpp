@@ -22,22 +22,15 @@ namespace Aero::RT::Camera {
         return Math::ray(ray_origin, ray_direction, ray_time);
 	}
 
-    void camera::set_samples_per_pixel(int value) {
-        samples_per_pixel = value;
-        pixel_samples_scale = 1.0 / samples_per_pixel;
-    }
-
-    void camera::initialize() {
-        image_height = std::max(1, int(image_width / aspect_ratio));
-
-        pixel_samples_scale = 1.0 / samples_per_pixel;
+    void camera::initialize(int width, int height) {
+        double aspect_ratio = static_cast<double>(width) / height;
 
         center = lookfrom;
 
         auto theta = degrees_to_radians(vfov);
         auto h = std::tan(theta / 2);
         auto viewport_height = 2 * h * focus_dist;
-        auto viewport_width = viewport_height * (double(image_width) / image_height);
+        auto viewport_width = viewport_height * aspect_ratio;
 
         // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
         w = Math::unit_vector(lookfrom - lookat);
@@ -48,8 +41,8 @@ namespace Aero::RT::Camera {
         Math::vec3<double> viewport_u = viewport_width * u; // Vector across viewport horizontal edge
         Math::vec3<double> viewport_v = viewport_height * -v; // Vector down viewport vertical edge
 
-        pixel_delta_u = viewport_u / image_width;
-        pixel_delta_v = viewport_v / image_height;
+        pixel_delta_u = viewport_u / width;
+        pixel_delta_v = viewport_v / height;
 
         // Calculate the location of the upper left pixel.
         auto viewport_upper_left = center - (focus_dist * w) - viewport_u / 2 - viewport_v / 2;

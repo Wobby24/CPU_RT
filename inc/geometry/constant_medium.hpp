@@ -12,6 +12,7 @@
 
 namespace Aero::RT::Geometry {
     class constant_medium : public hittable {
+    public:
         constant_medium(std::shared_ptr<hittable> boundary, double density, std::shared_ptr<Textures::texture> tex);
         constant_medium(std::shared_ptr<hittable> boundary, double density, const Utils::color& albedo);
 

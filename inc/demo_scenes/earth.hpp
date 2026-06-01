@@ -16,9 +16,10 @@
 #include "materials/lambertian.hpp"
 #include "textures/image_texture.hpp"
 #include "camera/camera.hpp"
+#include "renderer/renderOptions.hpp"
 
 namespace Aero::RT::Demo_Scenes {
-    void earth(Geometry::hittable_list& world, Camera::camera& cam) {
+    void earth(Geometry::hittable_list& world, Camera::camera& cam, renderOptions& ctx) {
     auto earth_texture = std::make_shared<Textures::image_texture>("res/textures/earthmap.jpg");
     auto earth_surface = std::make_shared<Materials::lambertian>(earth_texture);
     auto globe = std::make_shared<Geometry::sphere>(Math::point3(0,0,0), 2, earth_surface);
@@ -27,11 +28,11 @@ namespace Aero::RT::Demo_Scenes {
 
     world = Aero::RT::Geometry::hittable_list(std::make_shared<Aero::RT::Geometry::bvh_node>(world));
 
-    cam.set_aspect_ratio(16.0 / 9.0);
-    cam.set_image_width(400);
-    cam.set_samples_per_pixel(100);
-    cam.set_max_depth(50);
-    cam.set_background_color(Utils::color(0.70, 0.80, 1.00));
+    ctx.width = 400;
+    ctx.height = 225;
+    ctx.samples_per_pixel = 100;
+    ctx.max_depth = 50;
+    ctx.background = Utils::color(0.70, 0.80, 1.00);
 
     cam.set_fov(20);
     cam.set_lookfrom(Math::point3(0,0,12));

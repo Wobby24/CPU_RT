@@ -50,6 +50,7 @@ set(MATERIALS_SOURCES
     "${SRC_DIR}/materials/lambertian.cpp"
     "${SRC_DIR}/materials/metal.cpp"
     "${SRC_DIR}/materials/diffuse_light.cpp"
+    "${SRC_DIR}/materials/isotropic.cpp"
 )
 
 set(MATH_SOURCES
@@ -79,7 +80,7 @@ set(PROJECT_SOURCES
     ${CAMERA_SOURCES}
     ${UTIL_SOURCES}
     ${TEXTURE_SOURCES}
-    #"${SRC_DIR}/CPU_Raytracer.cpp"
+    "${SRC_DIR}/CPU_Raytracer.cpp"
     "${SRC_DIR}/main.cpp"
 )
 

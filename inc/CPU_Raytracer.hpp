@@ -1,1 +1,45 @@
-// idk what to add to this tbh. im not realyl sure how we woudl integrate stuff in here, but we have time for that
+#pragma once
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <cstdint>
+#include <memory>
+#include <mutex>
+#include <thread>
+#include <atomic>
+#include <sstream>
+
+#include "geometry/hittable_list.hpp"
+#include "camera/camera.hpp"
+#include "renderer/renderOptions.hpp"
+
+namespace Aero::RT {
+
+	class Aero_CPU_RT {
+	public:
+		Aero_CPU_RT();
+		~Aero_CPU_RT();
+
+		void render(const Aero::RT::Camera::camera& cam,
+			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
+
+		void copy_framebuffer(std::vector<uint32_t>& dest_buffer) {
+			std::lock_guard<std::mutex> lock(framebufferMutex);
+			dest_buffer = framebuffer; // Fast vector assignment copy
+		}
+
+		void stop_rendering() { isRendering = false; }
+		bool is_rendering() const { return isRendering; }
+	private:
+		std::vector<uint32_t> framebuffer;
+		std::mutex framebufferMutex;
+		std::atomic<bool> isRendering{ false };
+
+		// main render method will use these after determining which it needs to do 
+		void renderNew(const Aero::RT::Camera::camera& cam,
+			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
+		void resumeRender(const Aero::RT::Camera::camera& cam,
+			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
+	};
+}

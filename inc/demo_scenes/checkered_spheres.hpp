@@ -16,19 +16,20 @@
 #include "materials/lambertian.hpp"
 #include "textures/checker_texture.hpp"
 #include "camera/camera.hpp"
+#include "renderer/renderOptions.hpp"
 
 namespace Aero::RT::Demo_Scenes {
-	void checkered_spheres(Geometry::hittable_list& world, Camera::camera& cam) {
+	void checkered_spheres(Geometry::hittable_list& world, Camera::camera& cam, renderOptions& ctx) {
         auto checker = std::make_shared<Textures::checker_texture>(0.32, Utils::color(.2, .3, .1), Utils::color(.9, .9, .9));
 
         world.add(std::make_shared<Geometry::sphere>(Math::point3(0, -10, 0), 10, std::make_shared<Materials::lambertian>(checker)));
         world.add(std::make_shared<Geometry::sphere>(Math::point3(0, 10, 0), 10, std::make_shared<Materials::lambertian>(checker)));
 
-        cam.set_aspect_ratio(16.0 / 9.0);
-        cam.set_image_width(400);
-        cam.set_samples_per_pixel(100);
-        cam.set_max_depth(50);
-        cam.set_background_color(Utils::color(0.70, 0.80, 1.00));
+        ctx.width = 400;
+        ctx.height = 225;
+        ctx.samples_per_pixel = 100;
+        ctx.max_depth = 50;
+        ctx.background = Utils::color(0.70, 0.80, 1.00);
 
         cam.set_fov(20);
         cam.set_lookfrom(Math::point3(13, 2, 3));

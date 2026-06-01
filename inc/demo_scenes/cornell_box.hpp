@@ -9,17 +9,15 @@
 #include "util/common.hpp"
 #include "geometry/hittable.hpp"
 #include "geometry/hittable_list.hpp"
-#include "geometry/sphere.hpp" 
 #include "geometry/bvh.hpp"
 #include "geometry/translate.hpp"
 #include "materials/lambertian.hpp"
 #include "materials/diffuse_light.hpp"
-#include "textures/checker_texture.hpp"
-#include "textures/noise_texture.hpp"
 #include "camera/camera.hpp"
+#include "renderer/renderOptions.hpp"
 
 namespace Aero::RT::Demo_Scenes {
-    void cornell_box(Geometry::hittable_list& world, Camera::camera& cam) {
+    void cornell_box(Geometry::hittable_list& world, Camera::camera& cam, renderOptions& ctx) {
         auto red = std::make_shared<Materials::lambertian>(Utils::color(.65, .05, .05));
         auto white = std::make_shared<Materials::lambertian>(Utils::color(.73, .73, .73));
         auto green = std::make_shared<Materials::lambertian>(Utils::color(.12, .45, .15));
@@ -44,11 +42,11 @@ namespace Aero::RT::Demo_Scenes {
 
         world = Aero::RT::Geometry::hittable_list(std::make_shared<Aero::RT::Geometry::bvh_node>(world));
 
-        cam.set_aspect_ratio(1.0);
-        cam.set_image_width(600);
-        cam.set_samples_per_pixel(200);
-        cam.set_max_depth(50);
-        cam.set_background_color(Utils::color(0, 0, 0));
+        ctx.width = 600;
+        ctx.height = 600;
+        ctx.samples_per_pixel = 100;
+        ctx.max_depth = 50;
+        ctx.background = Utils::color(0, 0, 0);
 
         cam.set_fov(40);
         cam.set_lookfrom(Math::point3(278, 278, -800));

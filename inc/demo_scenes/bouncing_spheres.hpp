@@ -16,9 +16,10 @@
 #include "materials/lambertian.hpp"
 #include "textures/checker_texture.hpp"
 #include "camera/camera.hpp"
+#include "renderer/renderOptions.hpp"
 
 namespace Aero::RT::Demo_Scenes {
-    void bouncing_spheres(Geometry::hittable_list& world, Camera::camera& cam) {
+    void bouncing_spheres(Geometry::hittable_list& world, Camera::camera& cam, renderOptions& ctx) {
         auto checker = std::make_shared<Aero::RT::Textures::checker_texture>(0.32, Aero::RT::Utils::color(.2, .3, .1), Aero::RT::Utils::color(.9, .9, .9));
         world.add(std::make_shared<Aero::RT::Geometry::sphere>(Aero::RT::Math::point3(0, -1000, 0), 1000, std::make_shared<Aero::RT::Materials::lambertian>(checker)));
 
@@ -64,10 +65,11 @@ namespace Aero::RT::Demo_Scenes {
 
         world = Aero::RT::Geometry::hittable_list(std::make_shared<Aero::RT::Geometry::bvh_node>(world));
 
-        cam.set_image_width(400);
-        cam.set_samples_per_pixel(100);
-        cam.set_max_depth(50);
-        cam.set_background_color(Utils::color(0.70, 0.80, 1.00));
+        ctx.width = 400;
+        ctx.height = 225;
+        ctx.samples_per_pixel = 100;
+        ctx.max_depth = 50;
+        ctx.background = Utils::color(0.70, 0.80, 1.00);
 
         cam.set_fov(20);
         cam.set_lookfrom(Aero::RT::Math::point3(13, 2, 3));

@@ -4,7 +4,7 @@
 #include "math/ray.hpp"
 #include "geometry/hittable.hpp"
 #include "materials/material.hpp"
-#include <textures/texture.hpp>
+#include "textures/texture.hpp"
 #include <memory>
 
 namespace Aero::RT::Materials {

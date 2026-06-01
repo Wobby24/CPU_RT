@@ -16,9 +16,10 @@
 #include "textures/checker_texture.hpp"
 #include "textures/noise_texture.hpp"
 #include "camera/camera.hpp"
+#include "renderer/renderOptions.hpp"
 
 namespace Aero::RT::Demo_Scenes {
-    void simple_lights(Geometry::hittable_list& world, Camera::camera& cam) {
+    void simple_lights(Geometry::hittable_list& world, Camera::camera& cam, renderOptions& ctx) {
         auto pertext = std::make_shared<Textures::noise_texture>(4);
         auto difflight = std::make_shared<Materials::diffuse_light>(Utils::color(4, 4, 4));
         
@@ -30,11 +31,11 @@ namespace Aero::RT::Demo_Scenes {
 
         world = Aero::RT::Geometry::hittable_list(std::make_shared<Aero::RT::Geometry::bvh_node>(world));
 
-        cam.set_aspect_ratio(16.0 / 9.0);
-        cam.set_image_width(400);
-        cam.set_samples_per_pixel(100);
-        cam.set_max_depth(50);
-        cam.set_background_color(Utils::color(0, 0, 0));
+        ctx.width = 400;
+        ctx.height = 225;
+        ctx.samples_per_pixel = 100;
+        ctx.max_depth = 50;
+        ctx.background = Utils::color(0, 0, 0);
 
         cam.set_fov(20);
         cam.set_lookfrom(Math::point3(23, 3, 6));
