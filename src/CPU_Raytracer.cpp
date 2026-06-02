@@ -31,7 +31,7 @@ namespace Aero::RT {
             }
             else {
                 // Tile function doesn't output to the ppm correctly due to how the ppm data is organized. we write it incorrectly, so that'll have to be fixed. stick with scan lines for now
-               renderNew(cam, world, ctx);
+               renderTiles(cam, world, ctx);
             }
 
             isRendering = false;
@@ -178,6 +178,9 @@ namespace Aero::RT {
             const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx) {
         std::vector<Renderer::tile> tiles = Renderer::dispatchTiles(ctx.width, ctx.height, ctx.tile_size);
 
+        std::vector<Utils::color> PPMframebuffer;
+        PPMframebuffer.assign(ctx.width * ctx.height, Utils::color(0, 0, 0));
+
         std::clog << "\nRendering starting resolution: " << ctx.width << "x" << ctx.height << "\n";
 
         std::ofstream file(ctx.fileName);
@@ -209,7 +212,6 @@ namespace Aero::RT {
                     }
 
                     pixel_color *= (1.0 / ctx.samples_per_pixel);
-                    Aero::RT::Utils::write_color(file, pixel_color);
 
                     double r = Aero::RT::Utils::linear_to_gamma(pixel_color.x());
                     double g = Aero::RT::Utils::linear_to_gamma(pixel_color.y());
@@ -217,7 +219,20 @@ namespace Aero::RT {
 
                     framebuffer[j * ctx.width + i] =
                         Aero::RT::Utils::toRGBA8(r, g, b, 1.0f);
+                    PPMframebuffer[j * ctx.width + i] = pixel_color;
                 }
+            }
+        }
+
+
+        // write out data to file as if we were doing scanlines
+        std::clog << "Finished rendering, writing image data to file..." << "\n";
+        for (int y = 0; y < ctx.height; y++) {
+            for (int x = 0; x < ctx.width; x++) {
+                Aero::RT::Utils::write_color(
+                    file,
+                    PPMframebuffer[y * ctx.width + x]
+                );
             }
         }
     }

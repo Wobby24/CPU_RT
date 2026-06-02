@@ -33,7 +33,6 @@ namespace Aero::RT {
 		void stop_rendering() { isRendering = false; }
 		bool is_rendering() const { return isRendering; }
 	private:
-	//	std::vector<uint32_t> PPMframebuffer;
 		std::vector<uint32_t> framebuffer;
 		std::vector<bool> pixelDone;
 		std::mutex framebufferMutex;
