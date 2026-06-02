@@ -34,7 +34,7 @@ int main() {
 
     // dont do this, make a scene class for the love of all things good. the scene class can the pass its hittable list to the renderer and we shuld be good
 
-    switch (2) {
+    switch (3) {
         case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam, options);  break;
         case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam, options); break;
         case 3: Aero::RT::Demo_Scenes::earth(world, cam, options); break;

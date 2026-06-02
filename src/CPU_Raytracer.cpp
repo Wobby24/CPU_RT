@@ -17,27 +17,26 @@ namespace Aero::RT {
         // Allocate framebuffer and fill it with black in unrendered areas
             {
                 std::lock_guard<std::mutex> lock(framebufferMutex);
-                framebuffer.resize(ctx.width * ctx.height, 0);
+                // fill output viewer framebuffer with padding for render
+             //   liveViewFramebuffer.resize(ctx.width * ctx.height, 0);
+                framebuffer.assign(ctx.width * ctx.height, 0);
             }
 
-            int j = Utils::recover_ppm_render(ctx.fileName, ctx.width, ctx.height, ctx.tile_size);
+            int row = Utils::recover_ppm_render(ctx.fileName, ctx.width, ctx.height);
 
             isRendering = true;
 
-            // In a bottom-up system, a fresh render starts at j = 0.
-            // If recover_ppm_render returns anything greater than 0, we have data to resume!
-            if (j > 0 && j < ctx.height) {
+            if (row > 0 && row < ctx.height) {
                 resumeRender(cam, world, ctx);
             }
             else {
-                renderNew(tiles, cam, world, ctx);
-                //renderNew(cam, world, ctx);
+               renderNew(cam, world, ctx);
             }
 
             isRendering = false;
     }
 
-    void Aero_CPU_RT::renderNewScanline(const Aero::RT::Camera::camera& cam,
+    void Aero_CPU_RT::renderNew(const Aero::RT::Camera::camera& cam,
         const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx) {
         std::clog << "\nRendering starting resolution: " << ctx.width << "x" << ctx.height << "\n";
 
@@ -79,6 +78,7 @@ namespace Aero::RT {
             {
                 std::lock_guard<std::mutex> lock(framebufferMutex);
                 for (int i = 0; i < ctx.width; i++) {
+                  //  PPMframebuffer[j * ctx.width + i] = rowBuffer[i];
                     framebuffer[j * ctx.width + i] = rowBuffer[i];
                 }
             }
@@ -98,7 +98,7 @@ namespace Aero::RT {
             std::string line;
 
             std::getline(readFile, line);
-            std::getline(readFile, line); 
+            std::getline(readFile, line);
             std::getline(readFile, line);
 
             while (std::getline(readFile, line)) {
@@ -174,11 +174,20 @@ namespace Aero::RT {
         std::clog << "\nDone Resuming Trace.\n";
     }
 
-    void Aero_CPU_RT::renderNew(const std::vector<Renderer::tile>& tiles, const Aero::RT::Camera::camera& cam,
+
+   /*void Aero_CPU_RT::renderNew(const std::vector<Renderer::tile>& tiles, const Aero::RT::Camera::camera& cam,
         const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx) {
 
-        std::clog << "\nRendering starting (Bottom-Up) resolution: " << ctx.width << "x" << ctx.height << "\n";
+        std::clog << "\nRendering starting resolution: " << ctx.width << "x" << ctx.height << "\n";
         isRendering = true;
+
+        std::ofstream file(ctx.fileName);
+        if (!file) {
+            std::clog << "Could not open output file stream for " << ctx.fileName << "\n";
+            return;
+        }
+
+        file << "P3\n" << ctx.width << " " << ctx.height << "\n255\n";
 
         for (size_t k = 0; k < tiles.size(); k++) {
             if (!isRendering) break;
@@ -201,6 +210,8 @@ namespace Aero::RT {
                     double scale = 1.0 / ctx.samples_per_pixel;
                     pixel_color *= scale;
 
+                    Aero::RT::Utils::write_color(file, pixel_color);
+
                     double r = Aero::RT::Utils::linear_to_gamma(pixel_color.x());
                     double g = Aero::RT::Utils::linear_to_gamma(pixel_color.y());
                     double b = Aero::RT::Utils::linear_to_gamma(pixel_color.z());
@@ -211,36 +222,15 @@ namespace Aero::RT {
                 {
                     std::lock_guard<std::mutex> lock(framebufferMutex);
                     for (int i = tiles[k].x_start; i < tiles[k].x_end; i++) {
-                        framebuffer[j * ctx.width + i] = rowBuffer[i - tiles[k].x_start];
+                        PPMframebuffer[j * ctx.width + i] = rowBuffer[i - tiles[k].x_start];
+                        liveViewFramebuffer[j * ctx.width + i] = rowBuffer[i - tiles[k].x_start];
                     }
                 }
             }
         }
 
         isRendering = false;
-        std::clog << "\rTracing Complete. Stacking final image file to disk...          \n";
-
-        std::ofstream file(ctx.fileName);
-        if (!file) {
-            std::clog << "Could not open output file stream for " << ctx.fileName << "\n";
-            return;
-        }
-
-        file << "P3\n" << ctx.width << " " << ctx.height << "\n255\n";
-
-        for (int j = 0; j < ctx.height; j++) {
-            for (int i = 0; i < ctx.width; i++) {
-                uint32_t packedColor = framebuffer[j * ctx.width + i];
-
-                int r = (packedColor >> 0) & 0xFF;
-                int g = (packedColor >> 8) & 0xFF;
-                int b = (packedColor >> 16) & 0xFF;
-
-                file << r << " " << g << " " << b << "\n";
-            }
-        }
-
         file.close();
         std::clog << "Done Tracing and File Saved.\n";
-    }
+    }*/
 }
