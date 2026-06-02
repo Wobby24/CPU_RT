@@ -46,7 +46,7 @@ namespace Aero::RT {
 			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
 		void renderNew(const Aero::RT::Camera::camera& cam,
 				const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
-		//void renderNew(const std::vector<Renderer::tile>& tiles, const Aero::RT::Camera::camera& cam,
-		//const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
+		void renderTiles(const Aero::RT::Camera::camera& cam,
+			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
 	};
 }

@@ -30,6 +30,7 @@ namespace Aero::RT {
                 resumeRender(cam, world, ctx);
             }
             else {
+                // Tile function doesn't output to the ppm correctly due to how the ppm data is organized. we write it incorrectly, so that'll have to be fixed. stick with scan lines for now
                renderNew(cam, world, ctx);
             }
 
@@ -48,7 +49,6 @@ namespace Aero::RT {
 
         file << "P3\n" << ctx.width << " " << ctx.height << "\n255\n";
 
-        // Bottom-Up Loop: Counting UP from 0 to height
         for (int j = 0; j < ctx.height; j++) {
             if (!isRendering) break;
 
@@ -174,12 +174,11 @@ namespace Aero::RT {
         std::clog << "\nDone Resuming Trace.\n";
     }
 
-
-   /*void Aero_CPU_RT::renderNew(const std::vector<Renderer::tile>& tiles, const Aero::RT::Camera::camera& cam,
-        const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx) {
+    void Aero_CPU_RT::renderTiles(const Aero::RT::Camera::camera& cam,
+            const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx) {
+        std::vector<Renderer::tile> tiles = Renderer::dispatchTiles(ctx.width, ctx.height, ctx.tile_size);
 
         std::clog << "\nRendering starting resolution: " << ctx.width << "x" << ctx.height << "\n";
-        isRendering = true;
 
         std::ofstream file(ctx.fileName);
         if (!file) {
@@ -189,48 +188,37 @@ namespace Aero::RT {
 
         file << "P3\n" << ctx.width << " " << ctx.height << "\n255\n";
 
-        for (size_t k = 0; k < tiles.size(); k++) {
-            if (!isRendering) break;
-
-            std::clog << "\rTiles completed: " << k << "/" << tiles.size() << std::flush;
-
+        for (int k = 0; k < tiles.size(); k++) {
             for (int j = tiles[k].y_start; j < tiles[k].y_end; j++) {
 
-                int tileWidth = tiles[k].x_end - tiles[k].x_start;
-                std::vector<uint32_t> rowBuffer(tileWidth);
+                if (!isRendering)
+                    return;
 
                 for (int i = tiles[k].x_start; i < tiles[k].x_end; i++) {
+
                     Aero::RT::Utils::color pixel_color(0, 0, 0);
 
                     for (int s = 0; s < ctx.samples_per_pixel; s++) {
                         auto r = cam.get_ray(i, j);
-                        pixel_color += Renderer::ray_color(r, ctx.max_depth, world, ctx.background);
+                        pixel_color += Renderer::ray_color(
+                            r,
+                            ctx.max_depth,
+                            world,
+                            ctx.background
+                        );
                     }
 
-                    double scale = 1.0 / ctx.samples_per_pixel;
-                    pixel_color *= scale;
-
+                    pixel_color *= (1.0 / ctx.samples_per_pixel);
                     Aero::RT::Utils::write_color(file, pixel_color);
 
                     double r = Aero::RT::Utils::linear_to_gamma(pixel_color.x());
                     double g = Aero::RT::Utils::linear_to_gamma(pixel_color.y());
                     double b = Aero::RT::Utils::linear_to_gamma(pixel_color.z());
 
-                    rowBuffer[i - tiles[k].x_start] = Aero::RT::Utils::toRGBA8(r, g, b, 1.0f);
-                }
-
-                {
-                    std::lock_guard<std::mutex> lock(framebufferMutex);
-                    for (int i = tiles[k].x_start; i < tiles[k].x_end; i++) {
-                        PPMframebuffer[j * ctx.width + i] = rowBuffer[i - tiles[k].x_start];
-                        liveViewFramebuffer[j * ctx.width + i] = rowBuffer[i - tiles[k].x_start];
-                    }
+                    framebuffer[j * ctx.width + i] =
+                        Aero::RT::Utils::toRGBA8(r, g, b, 1.0f);
                 }
             }
         }
-
-        isRendering = false;
-        file.close();
-        std::clog << "Done Tracing and File Saved.\n";
-    }*/
+    }
 }

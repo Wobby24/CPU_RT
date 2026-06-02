@@ -5,6 +5,7 @@
 
 namespace Aero::RT::Renderer {
 	struct tile {
+        tile() {};
 		int x_start;
 		int y_start;
 		int x_end;
