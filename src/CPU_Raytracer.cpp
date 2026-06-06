@@ -25,8 +25,6 @@ namespace Aero::RT {
 
             int row = Utils::recover_ppm_render(ctx.fileName, ctx.width, ctx.height);
 
-            std::clog << "recover_ppm_render  returned: " << row << "\n";
-
             isRendering = true;
 
             // add a check for tile based renders, check arp. this code is so inefficient, REFACTOR IT
@@ -40,8 +38,6 @@ namespace Aero::RT {
                     tileIndex = std::stoi(line);
                 }
             }
-
-            std::clog << tileIndex;
 
             if (row > 0 && row < ctx.height || tileIndex > 0) {
                 resumeRenderTiles(cam, world, ctx);
@@ -102,7 +98,7 @@ namespace Aero::RT {
             }
         }
         file.close();
-        std::clog << "\rDone Tracing.                  \n";
+        std::clog << "\rProgram can now be safely closed via 'ESC' key or closing out of the window.\n";
     }
 
     // adapt this function for tiles
@@ -192,7 +188,7 @@ namespace Aero::RT {
             }
         }
         file.close();
-        std::clog << "\nDone Resuming Trace.\n";
+        std::clog << "\nRendering finished. Program can now be safely closed via 'ESC' key or closing out of the window.\n";
     }
 
     void Aero_CPU_RT::renderTiles(const Aero::RT::Camera::camera& cam,
@@ -269,6 +265,8 @@ namespace Aero::RT {
                 Aero::RT::Utils::write_color(file, PPMframebuffer[y * ctx.width + x]);
             }
         }
+
+        std::cout << "Finished writing data to PPM file. Program can now be safely closed via 'ESC' key or closing out of the window.";
     }
 
     void Aero_CPU_RT::resumeRenderTiles(const Aero::RT::Camera::camera& cam,
@@ -325,7 +323,7 @@ namespace Aero::RT {
             framebufferDumpRead.close();
         }
 
-        std::clog << "\n[Recovery] Successfully pulled " << pixelsRecoveredCount << " pixels out of cache.\n";
+      //  std::clog << "\n[Recovery] Successfully pulled " << pixelsRecoveredCount << " pixels out of cache.\n";
 
         // 3. Update the global display buffer all at once under lock
         {
@@ -337,7 +335,7 @@ namespace Aero::RT {
         std::ofstream sidecard(ctx.fileName + ".arp", std::ios_base::app);
         std::ofstream framebufferDump(ctx.fileName + ".afd", std::ios_base::app);
 
-        std::clog << "[Recovery] Resuming tile render starting from tile index: " << tileIndex << "\n";
+        std::clog << "Resuming tile render starting from tile index : " << tileIndex << "\n";
 
         // 5. Execute core loop, safely skipping finished tiles
         for (int k = 0; k < tiles.size(); k++) {

@@ -51,7 +51,8 @@ int main() {
 
     std::vector<Aero::RT::Renderer::tile> tiles = Aero::RT::Renderer::dispatchTiles(options.width, options.height, options.tile_size);
 
-    std::thread tracerThread([&, tiles]() {
+    // eventually we wont need this and can just move it onto threadpool
+    std::jthread tracerThread([&, tiles]() {
         renderer.render(tiles, cam, world, options);
      });
 
@@ -68,9 +69,9 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
     renderer.stop_rendering();
-    if (tracerThread.joinable()) {
-        tracerThread.join();
-    }
+   // if (tracerThread.joinable()) {
+   //     tracerThread.join();
+  //  }
 
     return 0;
 }
