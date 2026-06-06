@@ -1,3 +1,4 @@
 # TODO
 
-1. Experiment with tile based rendering and get it to work
+1. Add a tile recovery method - use a progress.dat file, at the top, print each number tile we finished going down, then if that number is what we are on in k, then skip it and go to teh next one. 
+then also for comments, add a helper with that whenever doing line checks to skip over it

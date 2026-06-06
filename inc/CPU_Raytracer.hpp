@@ -34,14 +34,12 @@ namespace Aero::RT {
 		bool is_rendering() const { return isRendering; }
 	private:
 		std::vector<uint32_t> framebuffer;
-		std::vector<bool> pixelDone;
 		std::mutex framebufferMutex;
 		std::atomic<bool> isRendering{ false };
-
-		// main render method will use these after determining which it needs to do 
-		//void renderNewScanline(const Aero::RT::Camera::camera& cam,
-		//	const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
+		
 		void resumeRender(const Aero::RT::Camera::camera& cam,
+			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
+		void resumeRenderTiles(const Aero::RT::Camera::camera& cam,
 			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
 		void renderNew(const Aero::RT::Camera::camera& cam,
 				const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
