@@ -32,9 +32,11 @@ int main() {
     Aero::RT::Camera::camera cam;
     Aero::GL::OGL_RT_TextureViewer texViewer;
 
+    options.threadCount = 4;
+
     // dont do this, make a scene class for the love of all things good. the scene class can the pass its hittable list to the renderer and we shuld be good
 
-    switch (3) {
+    switch (7) {
         case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam, options);  break;
         case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam, options); break;
         case 3: Aero::RT::Demo_Scenes::earth(world, cam, options); break;
@@ -52,8 +54,8 @@ int main() {
     std::vector<Aero::RT::Renderer::tile> tiles = Aero::RT::Renderer::dispatchTiles(options.width, options.height, options.tile_size);
 
     // eventually we wont need this and can just move it onto threadpool
-    std::jthread tracerThread([&, tiles]() {
-        renderer.render(tiles, cam, world, options);
+    std::thread tracerThread([&, tiles]() {
+        renderer.render(cam, world, options);
      });
 
     // pre-allocate our framebuffer that the output viewer displays
@@ -69,9 +71,9 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
     renderer.stop_rendering();
-   // if (tracerThread.joinable()) {
-   //     tracerThread.join();
-  //  }
+   if (tracerThread.joinable()) {
+        tracerThread.join();
+    }
 
     return 0;
 }

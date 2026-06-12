@@ -14,6 +14,8 @@
 #include "camera/camera.hpp"
 #include "renderer/renderOptions.hpp"
 #include "renderer/tile.hpp"
+#include "util/thread_pool.hpp"
+#include "util/color.hpp"
 
 namespace Aero::RT {
 
@@ -22,8 +24,8 @@ namespace Aero::RT {
 		Aero_CPU_RT();
 		~Aero_CPU_RT();
 
-		void render(const std::vector<Renderer::tile>& tiles, const Aero::RT::Camera::camera& cam,
-			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
+		void render(const Aero::RT::Camera::camera& cam,
+			const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx);
 
 		void copy_framebuffer(std::vector<uint32_t>& dest_buffer) {
 			std::lock_guard<std::mutex> lock(framebufferMutex);
@@ -34,16 +36,29 @@ namespace Aero::RT {
 		bool is_rendering() const { return isRendering; }
 	private:
 		std::vector<uint32_t> framebuffer;
+		std::vector<Utils::color> ppmFramebuffer;
+
+		std::thread fileWriterThread;
+		std::atomic<int> completedTileCount{ 0 };   // Shared progress tracker
+		std::atomic<bool> isFileWriterRunning{ false };
+
 		std::mutex framebufferMutex;
+
 		std::atomic<bool> isRendering{ false };
 		
+		// scanline code (old, not recommeneded)
 		void resumeRender(const Aero::RT::Camera::camera& cam,
-			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
-		void resumeRenderTiles(const Aero::RT::Camera::camera& cam,
-			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
+			const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx);
 		void renderNew(const Aero::RT::Camera::camera& cam,
-				const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
-		void renderTiles(const Aero::RT::Camera::camera& cam,
-			const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx);
+				const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx);
+
+		void renderTiles(const Aero::RT::Renderer::tile& t, const Aero::RT::Camera::camera& cam,
+			const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx,
+			std::vector<uint32_t>& framebuffer,
+			std::vector<Utils::color>& ppmFramebuffer);
+
+		void fileWriterLoop(const std::vector<Renderer::tile>& tiles, const renderOptions& ctx);
+		void writeToPPM(const renderOptions& ctx);
+		int recoveryIndex(const renderOptions& ctx);
 	};
 }

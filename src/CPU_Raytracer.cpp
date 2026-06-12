@@ -12,47 +12,57 @@ namespace Aero::RT {
 
     Aero_CPU_RT::~Aero_CPU_RT() {}
 
-    void Aero_CPU_RT::render(const std::vector<Renderer::tile>& tiles, const Aero::RT::Camera::camera& cam,
-        const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx) {
+    void Aero_CPU_RT::render(const Aero::RT::Camera::camera& cam,
+        const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx) {
 
-        // allocate framebuffer and fill it with black in unrendered areas
+            Utils::thread_pool thread_pool(ctx.threadCount);
             {
                 std::lock_guard<std::mutex> lock(framebufferMutex);
-                // fill output viewer framebuffer with padding for render
-             //   liveViewFramebuffer.resize(ctx.width * ctx.height, 0);
                 framebuffer.assign(ctx.width * ctx.height, 0);
             }
+ 
+            ppmFramebuffer.assign(ctx.width * ctx.height, Utils::color(0, 0, 0));
 
-            int row = Utils::recover_ppm_render(ctx.fileName, ctx.width, ctx.height);
+            std::vector<Renderer::tile> tiles = Renderer::dispatchTiles(ctx.width, ctx.height, ctx.tile_size);
 
             isRendering = true;
+            completedTileCount = recoveryIndex(ctx);
+            isFileWriterRunning = true;
 
-            // add a check for tile based renders, check arp. this code is so inefficient, REFACTOR IT
-            std::ifstream renderProgressFile(ctx.fileName + ".arp");
-            std::string line;
-            int tileIndex = 0;
+           // Spin up the dedicated file writing background thread
+            fileWriterThread = std::thread(&Aero_CPU_RT::fileWriterLoop, this, std::ref(tiles), std::ref(ctx));
 
-            if (renderProgressFile.is_open()) {
-                while (std::getline(renderProgressFile, line)) {
-                    // set tile index to line (stoi = string to int)
-                    tileIndex = std::stoi(line);
+            for (int k = completedTileCount; k < tiles.size(); k++) {
+                thread_pool.Enqueue([this, k, &tiles, &cam, &world, &ctx]() {
+                    this->renderTiles(tiles[k], cam, world, ctx, this->framebuffer, this->ppmFramebuffer);
+                    });
+                //renderTiles(tiles[k], cam, world, ctx, framebuffer, ppmFramebuffer);
+            }
+            writeToPPM(ctx);
+
+            // check if we need to abort mid-render
+            while (completedTileCount.load() < tiles.size()) {
+                if (!isRendering) {
+                    std::clog << "\n[Render] Abort caught in main loop. Shaking out background threads...\n";
+                    break;
                 }
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
             }
 
-            if (row > 0 && row < ctx.height || tileIndex > 0) {
-                resumeRenderTiles(cam, world, ctx);
-            }
-            else {
-                // Tile function cant recover
-               std::clog << "Calling renderTiles\n";
-               renderTiles(cam, world, ctx);
+            isFileWriterRunning = false;
+
+            // safe to join because the loop condition has been flipped to false
+            if (fileWriterThread.joinable()) {
+                fileWriterThread.join();
             }
 
             isRendering = false;
+
+            std::clog << "\nRender finished. Program may now be closed." << "\n";
     }
 
     void Aero_CPU_RT::renderNew(const Aero::RT::Camera::camera& cam,
-        const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx) {
+        const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx) {
         std::clog << "\nRendering starting resolution: " << ctx.width << "x" << ctx.height << "\n";
 
         std::ofstream file(ctx.fileName);
@@ -103,7 +113,7 @@ namespace Aero::RT {
 
     // adapt this function for tiles
     void Aero_CPU_RT::resumeRender(const Aero::RT::Camera::camera& cam,
-        const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx) {
+        const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx) {
 
         int validPixelCount = 0;
         std::vector<uint32_t> tempBuffer(ctx.width * ctx.height, 0);
@@ -191,45 +201,17 @@ namespace Aero::RT {
         std::clog << "\nRendering finished. Program can now be safely closed via 'ESC' key or closing out of the window.\n";
     }
 
-    void Aero_CPU_RT::renderTiles(const Aero::RT::Camera::camera& cam,
-        const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx) {
+    void Aero_CPU_RT::renderTiles(const Aero::RT::Renderer::tile& t, const Aero::RT::Camera::camera& cam,
+        const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx,
+        std::vector<uint32_t>& framebuffer,
+        std::vector<Utils::color>& ppmFramebuffer) {
 
-        std::vector<Renderer::tile> tiles = Renderer::dispatchTiles(ctx.width, ctx.height, ctx.tile_size);
-
-        std::vector<Utils::color> PPMframebuffer;
-        PPMframebuffer.assign(ctx.width * ctx.height, Utils::color(0, 0, 0));
-
-        std::clog << "\nRendering starting resolution: " << ctx.width << "x" << ctx.height << "\n";
-
-        // Open clean file streams
-        std::ofstream file(ctx.fileName);
-        if (!file) {
-            std::clog << "Could not open output file stream for " << ctx.fileName << "\n";
-            return;
-        }
-
-        std::ofstream sidecard(ctx.fileName + ".arp");
-        if (!sidecard) {
-            std::clog << "Could not open output file stream for " << ctx.fileName + ".arp" << "\n";
-            return;
-        }
-
-        std::ofstream framebufferDump(ctx.fileName + ".afd");
-        if (!framebufferDump) {
-            std::clog << "Could not open output file stream for " << ctx.fileName + ".afd" << "\n";
-            return;
-        }
-
-        file << "P3\n" << ctx.width << " " << ctx.height << "\n255\n";
-
-        for (int k = 0; k < tiles.size(); k++) {
-            for (int j = tiles[k].y_start; j < tiles[k].y_end; j++) {
+        for (int j = t.y_start; j < t.y_end; j++) {
 
                 if (!isRendering)
                     return;
 
-                for (int i = tiles[k].x_start; i < tiles[k].x_end; i++) {
-
+                for (int i = t.x_start; i < t.x_end; i++) {
                     Aero::RT::Utils::color pixel_color(0, 0, 0);
 
                     for (int s = 0; s < ctx.samples_per_pixel; s++) {
@@ -246,19 +228,117 @@ namespace Aero::RT {
                     size_t pixelIdx = j * ctx.width + i;
 
                     framebuffer[pixelIdx] = Aero::RT::Utils::toRGBA8(r, g, b, 1.0f);
-                    PPMframebuffer[pixelIdx] = pixel_color;
-
-                    framebufferDump << pixelIdx << " " << pixel_color.x() << " " << pixel_color.y() << " " << pixel_color.z() << "\n";
+                    ppmFramebuffer[pixelIdx] = pixel_color;
                 }
             }
 
-            // Record tile completion to sidecard
-            sidecard << k << "\n";
-
-            framebufferDump.flush();
-            sidecard.flush();
+        
+            completedTileCount++;
         }
 
+    void Aero_CPU_RT::fileWriterLoop(const std::vector<Renderer::tile>& tiles, const renderOptions& ctx) {
+        std::ofstream sidecard(ctx.fileName + ".arp", std::ios_base::app);
+        std::ofstream framebufferDump(ctx.fileName + ".afd", std::ios_base::app);
+
+        int lastWrittenTileCount = 0;
+
+        while (isFileWriterRunning) {
+            int currentProgress = completedTileCount.load();
+
+            // If the counter went up, new data is ready in the buffer
+            if (currentProgress > lastWrittenTileCount) {
+
+                // Look at which tiles are newly finished and write them
+                for (int k = lastWrittenTileCount; k < currentProgress; k++) {
+                    const auto& tile = tiles[k];
+
+                    // Read directly from the buffers. This is safe because 
+                    // the worker thread has completely finished modifying this region  
+                    for (int j = tile.y_start; j < tile.y_end; j++) {
+                        for (int i = tile.x_start; i < tile.x_end; i++) {
+                            size_t idx = j * ctx.width + i;
+                            framebufferDump << idx << " " << ppmFramebuffer[idx].x() << " "
+                                << ppmFramebuffer[idx].y() << " " << ppmFramebuffer[idx].z() << "\n";
+                        }
+                    }
+                    sidecard << k << "\n";
+                }
+
+                framebufferDump.flush();
+                sidecard.flush();
+                lastWrittenTileCount = currentProgress;
+            }
+
+
+            // Sleep for a tiny bit (e.g., 50 milliseconds) so this loop 
+            // doesn't max out a CPU core checking the counter.
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+    }
+
+    void Aero_CPU_RT::writeToPPM(const renderOptions& ctx) {
+        std::ofstream ppmFile(ctx.fileName);
+        ppmFile.flush();
+
+        ppmFile << "P3\n" << ctx.width << " " << ctx.height << "\n255\n";
+
+        std::clog << "Finished rendering, writing image data to file..." << "\n";
+        for (int y = 0; y < ctx.height; y++) {
+            for (int x = 0; x < ctx.width; x++) {
+                Aero::RT::Utils::write_color(ppmFile, ppmFramebuffer[y * ctx.width + x]);
+            }
+        }
+    }
+
+    int Aero_CPU_RT::recoveryIndex(const renderOptions& ctx) {
+        // 3. RECOVERY SYSTEM: Find out where we left off
+        int startingTileIdx = 0;
+        std::ifstream renderProgressFile(ctx.fileName + ".arp");
+        if (renderProgressFile.is_open()) {
+            std::string line;
+            while (std::getline(renderProgressFile, line)) {
+                if (!line.empty()) {
+                    startingTileIdx = std::stoi(line) + 1; // Start at the NEXT tile
+                }
+            }
+            renderProgressFile.close();
+        }
+
+        // 4. If resuming, pull historical float data from the afd dump back into memory
+        if (startingTileIdx > 0) {
+            std::clog << "\nResuming tile render starting from tile index: " << startingTileIdx << "\n";
+            std::ifstream framebufferDumpRead(ctx.fileName + ".afd");
+            if (framebufferDumpRead.is_open()) {
+                std::string line;
+                while (std::getline(framebufferDumpRead, line)) {
+                    if (line.empty()) continue;
+                    std::stringstream ss(line);
+                    size_t index;
+                    double r, g, b;
+                    if (ss >> index >> r >> g >> b) {
+                        if (index < ppmFramebuffer.size()) {
+                            ppmFramebuffer[index] = Utils::color(r, g, b);
+
+                            double dr = Aero::RT::Utils::linear_to_gamma(r);
+                            double dg = Aero::RT::Utils::linear_to_gamma(g);
+                            double db = Aero::RT::Utils::linear_to_gamma(b);
+                            framebuffer[index] = Aero::RT::Utils::toRGBA8(dr, dg, db, 1.0f);
+                        }
+                    }
+                }
+                framebufferDumpRead.close();
+            }
+        }
+        else {
+            std::clog << "\nStarting new render with resolution: " << ctx.width << "x" << ctx.height << "\n";
+            std::ofstream clearDump(ctx.fileName + ".afd");
+            std::ofstream clearArp(ctx.fileName + ".arp");
+        }
+        
+        return startingTileIdx;
+    }
+
+      /*
         std::clog << "Finished rendering, writing image data to file..." << "\n";
         for (int y = 0; y < ctx.height; y++) {
             for (int x = 0; x < ctx.width; x++) {
@@ -266,11 +346,12 @@ namespace Aero::RT {
             }
         }
 
-        std::cout << "Finished writing data to PPM file. Program can now be safely closed via 'ESC' key or closing out of the window.";
+        std::cout << "Finished writing data to PPM file. Program can now be safely closed via 'ESC' key or closing out of the window.";*/  
     }
 
-    void Aero_CPU_RT::resumeRenderTiles(const Aero::RT::Camera::camera& cam,
-        const Aero::RT::Geometry::hittable_list& world, renderOptions& ctx) {
+  
+ /*  void Aero_CPU_RT::resumeRenderTiles(const Aero::RT::Camera::camera& cam,
+        const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx) {
 
         std::vector<Renderer::tile> tiles = Renderer::dispatchTiles(ctx.width, ctx.height, ctx.tile_size);
 
@@ -385,5 +466,4 @@ namespace Aero::RT {
                 }
             }
         }
-    }
-}
+    }*/

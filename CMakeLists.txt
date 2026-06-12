@@ -63,6 +63,7 @@ set(UTIL_SOURCES
     "${SRC_DIR}/util/color.cpp"
     "${SRC_DIR}/util/image_loader.cpp"
     "${SRC_DIR}/util/perlin_noise.cpp"
+    "${SRC_DIR}/util/thread_pool.cpp"
 )
 
 set(TEXTURE_SOURCES
