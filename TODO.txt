@@ -1,3 +1,4 @@
 # TODO
 
-Clean up 'render' function by moving resume logic to another function and allow for multithreaded bool option and thread count - add this to teh json or adda  config struct
+Refactor renderer to use SoA, remove most inheritance and traditional OOP structures or ideas. You'll want to get good with Google Highway first, then read up on SIMD principles, and lastly try to 
+abstract it a bit better for it to correctly be SIMD compatible. Programming the intersection code for SIMD and reformating it for SoA instead of AoS and OOP will be the hardest part.

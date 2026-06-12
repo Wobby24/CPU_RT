@@ -1,0 +1,21 @@
+-r
+C:\Users\Sam\Downloads\Visual Studio Projects\CPU_Raytracer_V2\Aero CPU_RT\r001tr
+--stack-stitching
+--data-limit-mb=1000
+--disk-space-limit=0
+--mrte-type=java,dotnet,python
+--itt-config=openmp
+--stack-unwind-limit=8388608
+--itt-config=frame
+--itt-config=task,event,counter
+--stackwalk=offline
+--mrte-mode=auto
+--type=cpu:stack
+--interval=10
+--type=threading:stack
+--type=waiting:stack
+--type=io:stack
+--platform-type=145
+--app-working-dir=C:\Users\Sam\Downloads\Visual Studio Projects\CPU_Raytracer_V2\out\build\x64-Release\bin
+--
+C:\Users\Sam\Downloads\Visual Studio Projects\CPU_Raytracer_V2\out\build\x64-Release\bin\CPURaytracer.exe

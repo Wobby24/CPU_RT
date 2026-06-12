@@ -19,9 +19,39 @@
 #include "demo_scenes/book_2_final_scene.hpp"
 
 #include "OGL_RT_TextureView.hpp"
+#include "hwy/highway.h"
 #include "CPU_Raytracer.hpp"
 #include "renderer/renderOptions.hpp"
 #include "renderer/tile.hpp"
+
+namespace hn = hwy::HWY_NAMESPACE;
+
+void testSIMDAlignment() {
+    // 1. Define our hardware vector descriptor for 32-bit floats
+    constexpr hn::ScalableTag<float> d;
+    size_t lanes = hn::Lanes(d);
+
+    std::cout << "[SIMD Test] Your CPU is processing " << lanes << " floats per register!\n";
+
+    // 2. Create some basic mock data matching our lane size
+    std::vector<float> arrayA(lanes, 10.0f); // Fill with 10.0
+    std::vector<float> arrayB(lanes, 5.5f);  // Fill with 5.5
+    std::vector<float> arrayC(lanes, 0.0f);  // Storage for results
+
+    // 3. THE SIMD OPERATION:
+    // Load data from normal RAM into SIMD hardware registers
+    auto vecA = hn::Load(d, arrayA.data());
+    auto vecB = hn::Load(d, arrayB.data());
+
+    // Execute ONE instruction to add all lanes simultaneously!
+    auto vecResult = hn::Add(vecA, vecB);
+
+    // Store the hardware register data back into standard RAM
+    hn::Store(vecResult, d, arrayC.data());
+
+    // 4. Verify the silicon did the math right
+    std::cout << "[SIMD Test] Result at index 0: " << arrayC[0] << " (Expected: 15.5)\n";
+}
 
 int main() {
    
@@ -33,11 +63,11 @@ int main() {
     Aero::GL::OGL_RT_TextureViewer texViewer;
 
     options.multithreaded = true;
-    options.threadCount = 4;
+    options.threadCount = 8;
 
     // dont do this, make a scene class for the love of all things good. the scene class can the pass its hittable list to the renderer and we shuld be good
 
-    switch (3) {
+    switch (10) {
         case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam, options);  break;
         case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam, options); break;
         case 3: Aero::RT::Demo_Scenes::earth(world, cam, options); break;
@@ -51,6 +81,7 @@ int main() {
     }
 
     cam.initialize(options.width, options.height);
+    testSIMDAlignment();
 
     std::vector<Aero::RT::Renderer::tile> tiles = Aero::RT::Renderer::dispatchTiles(options.width, options.height, options.tile_size);
 

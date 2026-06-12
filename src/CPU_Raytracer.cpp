@@ -32,7 +32,6 @@ namespace Aero::RT {
            // Spin up the dedicated file writing background thread
             fileWriterThread = std::thread(&Aero_CPU_RT::fileWriterLoop, this, std::ref(tiles), std::ref(ctx));
 
-
             if (ctx.multithreaded) {
                 for (int k = completedTileCount; k < tiles.size(); k++) {
                         thread_pool.Enqueue([this, k, &tiles, &cam, &world, &ctx]() {
@@ -55,12 +54,10 @@ namespace Aero::RT {
                 }
             }
 
-            writeToPPM(ctx);
-
             // check if we need to abort mid-render
             while (completedTileCount.load() < tiles.size()) {
                 if (!isRendering) {
-                    std::clog << "\n[Render] Abort caught in main loop. Shaking out background threads...\n";
+                    std::clog << "\nAbort caught in main loop. Shaking out background threads...\n";
                     break;
                 }
                 std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -72,6 +69,8 @@ namespace Aero::RT {
             if (fileWriterThread.joinable()) {
                 fileWriterThread.join();
             }
+
+            writeToPPM(ctx);
 
             isRendering = false;
 
@@ -295,7 +294,12 @@ namespace Aero::RT {
 
     void Aero_CPU_RT::writeToPPM(const renderOptions& ctx) {
         std::ofstream ppmFile(ctx.fileName);
-        ppmFile.flush();
+        if (!ppmFile) {
+            std::clog << "Failed to open PPM output file: " << ctx.fileName << "\n";
+            return;
+        }
+
+      //  ppmFile.flush();
 
         ppmFile << "P3\n" << ctx.width << " " << ctx.height << "\n255\n";
 
@@ -365,122 +369,3 @@ namespace Aero::RT {
 
         std::cout << "Finished writing data to PPM file. Program can now be safely closed via 'ESC' key or closing out of the window.";*/  
     }
-
-  
- /*  void Aero_CPU_RT::resumeRenderTiles(const Aero::RT::Camera::camera& cam,
-        const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx) {
-
-        std::vector<Renderer::tile> tiles = Renderer::dispatchTiles(ctx.width, ctx.height, ctx.tile_size);
-
-        std::vector<Utils::color> localPPMBuffer(ctx.width * ctx.height, Utils::color(0, 0, 0));
-        std::vector<uint32_t> localDisplayBuffer(ctx.width * ctx.height, 0);
-
-        // 1. Correctly read the last fully completed tile index
-        int tileIndex = 0;
-        {
-            std::ifstream sidecardRead(ctx.fileName + ".arp");
-            std::string line;
-            if (sidecardRead.is_open()) {
-                while (std::getline(sidecardRead, line)) {
-                    if (!line.empty()) tileIndex = std::stoi(line);
-                }
-            }
-        }
-
-        // 2. Open dump file for READING and parsing securely line-by-line
-        std::ifstream framebufferDumpRead(ctx.fileName + ".afd");
-        size_t pixelsRecoveredCount = 0;
-
-        if (framebufferDumpRead.is_open()) {
-            std::string line;
-            while (std::getline(framebufferDumpRead, line)) {
-                if (line.empty()) continue;
-
-                std::stringstream ss(line);
-                size_t index;
-                double raw_r, raw_g, raw_b;
-
-                if (ss >> index >> raw_r >> raw_g >> raw_b) {
-                    if (index >= localDisplayBuffer.size()) continue;
-
-                    // Clean up potential invalid mathematical floats
-                    if (std::isnan(raw_r) || std::isinf(raw_r)) raw_r = 0.0;
-                    if (std::isnan(raw_g) || std::isinf(raw_g)) raw_g = 0.0;
-                    if (std::isnan(raw_b) || std::isinf(raw_b)) raw_b = 0.0;
-
-                    localPPMBuffer[index] = Utils::color(raw_r, raw_g, raw_b);
-
-                    double display_r = Aero::RT::Utils::linear_to_gamma(raw_r);
-                    double display_g = Aero::RT::Utils::linear_to_gamma(raw_g);
-                    double display_b = Aero::RT::Utils::linear_to_gamma(raw_b);
-
-                    localDisplayBuffer[index] = Aero::RT::Utils::toRGBA8(display_r, display_g, display_b, 1.0f);
-                    pixelsRecoveredCount++;
-                }
-            }
-            framebufferDumpRead.close();
-        }
-
-      //  std::clog << "\n[Recovery] Successfully pulled " << pixelsRecoveredCount << " pixels out of cache.\n";
-
-        // 3. Update the global display buffer all at once under lock
-        {
-            std::lock_guard<std::mutex> lock(framebufferMutex);
-            framebuffer = localDisplayBuffer;
-        }
-
-        // 4. Open tracking streams in APPEND mode to add onto current history files
-        std::ofstream sidecard(ctx.fileName + ".arp", std::ios_base::app);
-        std::ofstream framebufferDump(ctx.fileName + ".afd", std::ios_base::app);
-
-        std::clog << "Resuming tile render starting from tile index : " << tileIndex << "\n";
-
-        // 5. Execute core loop, safely skipping finished tiles
-        for (int k = 0; k < tiles.size(); k++) {
-
-            if (k < tileIndex) continue; // Skip completed tiles
-
-            for (int j = tiles[k].y_start; j < tiles[k].y_end; j++) {
-                if (!isRendering) return;
-
-                for (int i = tiles[k].x_start; i < tiles[k].x_end; i++) {
-                    Aero::RT::Utils::color pixel_color(0, 0, 0);
-
-                    for (int s = 0; s < ctx.samples_per_pixel; s++) {
-                        auto r = cam.get_ray(i, j);
-                        pixel_color += Renderer::ray_color(r, ctx.max_depth, world, ctx.background);
-                    }
-
-                    pixel_color *= (1.0 / ctx.samples_per_pixel);
-
-                    double r = Aero::RT::Utils::linear_to_gamma(pixel_color.x());
-                    double g = Aero::RT::Utils::linear_to_gamma(pixel_color.y());
-                    double b = Aero::RT::Utils::linear_to_gamma(pixel_color.z());
-
-                    size_t pixelIdx = j * ctx.width + i;
-
-                    {
-                        std::lock_guard<std::mutex> lock(framebufferMutex);
-                        framebuffer[pixelIdx] = Aero::RT::Utils::toRGBA8(r, g, b, 1.0f);
-                    }
-
-                    localPPMBuffer[pixelIdx] = pixel_color;
-                    framebufferDump << pixelIdx << " " << pixel_color.x() << " " << pixel_color.y() << " " << pixel_color.z() << "\n";
-                }
-            }
-            sidecard << k << "\n";
-            framebufferDump.flush();
-            sidecard.flush();
-        }
-
-        // 6. Overwrite the final output image with complete assembled progress
-        std::ofstream ppmFile(ctx.fileName);
-        if (ppmFile) {
-            ppmFile << "P3\n" << ctx.width << " " << ctx.height << "\n255\n";
-            for (int y = 0; y < ctx.height; y++) {
-                for (int x = 0; x < ctx.width; x++) {
-                    Aero::RT::Utils::write_color(ppmFile, localPPMBuffer[y * ctx.width + x]);
-                }
-            }
-        }
-    }*/

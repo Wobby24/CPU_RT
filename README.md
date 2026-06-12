@@ -1,5 +1,5 @@
 # Wobby's CPU_RT
-An improvement over my previous CPU Raytracer. The main goal for this one is a cleaner API and the ability to render triangles.
+A raytracing engine (technically pathtracing) that is ment to be an improvement over my previous engine. It supports more features, cleaner code, better performance, and new ideas for better development iteration.
 
 ## Goals
 
@@ -11,5 +11,3 @@ An improvement over my previous CPU Raytracer. The main goal for this one is a c
 6. JSON configuartion, scene descriptor, and assest listing system
 7. Vulkan RT scene previewer for rapid iteration
 8. PNG, JPEG, and OpenEXR output
-
-## Issuesthta

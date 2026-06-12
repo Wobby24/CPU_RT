@@ -16,6 +16,19 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(OGL_RT_TextureView)
 
+# Disable Highway's heavy testing and benchmark suites
+set(HWY_ENABLE_TESTS OFF CACHE BOOL "Disable Highway tests" FORCE)
+set(HWY_ENABLE_EXAMPLES OFF CACHE BOOL "Disable Highway examples" FORCE)
+set(HWY_ENABLE_CONTRIB ON CACHE BOOL "Enable Highway contrib (useful math types)" FORCE)
+
+FetchContent_Declare(
+    highway
+    GIT_REPOSITORY https://github.com/google/highway.git
+    GIT_TAG        1.4.0
+)
+
+FetchContent_MakeAvailable(highway)
+
 # Default to Debug
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
@@ -103,6 +116,9 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE  OGL_RT_TextureView::OGL_RT_TextureView)
+
+# Assuming your target is named Aero_CPU_RT or CPURaytracer
+target_link_libraries(${PROJECT_NAME} PRIVATE hwy)
 
 # Includes
 target_include_directories(${PROJECT_NAME}
