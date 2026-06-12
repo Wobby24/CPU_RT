@@ -32,12 +32,29 @@ namespace Aero::RT {
            // Spin up the dedicated file writing background thread
             fileWriterThread = std::thread(&Aero_CPU_RT::fileWriterLoop, this, std::ref(tiles), std::ref(ctx));
 
-            for (int k = completedTileCount; k < tiles.size(); k++) {
-                thread_pool.Enqueue([this, k, &tiles, &cam, &world, &ctx]() {
-                    this->renderTiles(tiles[k], cam, world, ctx, this->framebuffer, this->ppmFramebuffer);
-                    });
-                //renderTiles(tiles[k], cam, world, ctx, framebuffer, ppmFramebuffer);
+
+            if (ctx.multithreaded) {
+                for (int k = completedTileCount; k < tiles.size(); k++) {
+                        thread_pool.Enqueue([this, k, &tiles, &cam, &world, &ctx]() {
+                            this->renderTiles(tiles[k], cam, world, ctx, this->framebuffer, this->ppmFramebuffer);
+                            });
+                }
             }
+            else {
+                for (int k = completedTileCount; k < tiles.size(); k++) {
+                    std::jthread  thread([this, &tiles, k, cam, &world, &ctx]() {
+                        renderTiles(
+                            tiles[k],
+                            cam,
+                            world,
+                            ctx,
+                            this->framebuffer,
+                            this->ppmFramebuffer
+                        );
+                    });
+                }
+            }
+
             writeToPPM(ctx);
 
             // check if we need to abort mid-render

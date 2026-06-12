@@ -11,8 +11,8 @@ namespace Aero::RT {
         int samples_per_pixel = 10;
         int max_depth = 10;
 
-        int tile_size = 16;
-        int threadCount = 1;
+        int tile_size = 32;
+        int threadCount = std::thread::hardware_concurrency() - 2;
         bool multithreaded = true;
 
         Utils::color background = Utils::color(0.0, 0.0, 0.0); 
