@@ -38,6 +38,10 @@ namespace Aero::RT {
 		std::vector<uint32_t> framebuffer;
 		std::vector<Utils::color> ppmFramebuffer;
 
+		std::queue<int> finishedTileQueue;
+		std::mutex queueMutex;
+		std::condition_variable queueCV;
+
 		std::thread fileWriterThread;
 		std::atomic<int> completedTileCount{ 0 };   // Shared progress tracker
 		std::atomic<bool> isFileWriterRunning{ false };
@@ -52,12 +56,12 @@ namespace Aero::RT {
 		void renderNew(const Aero::RT::Camera::camera& cam,
 				const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx);
 
-		void renderTiles(const Aero::RT::Renderer::tile& t, const Aero::RT::Camera::camera& cam,
+		void renderTiles(int tileIndex, const Aero::RT::Renderer::tile& t, const Aero::RT::Camera::camera& cam,
 			const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx,
 			std::vector<uint32_t>& framebuffer,
 			std::vector<Utils::color>& ppmFramebuffer);
 
-		void fileWriterLoop(const std::vector<Renderer::tile>& tiles, const renderOptions& ctx);
+		void fileWriterLoop(const std::vector<Renderer::tile>& tiles, const renderOptions& ctx, int startingTileIdx);
 		void writeToPPM(const renderOptions& ctx);
 		int recoveryIndex(const renderOptions& ctx);
 	};

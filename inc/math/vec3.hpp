@@ -73,12 +73,6 @@ namespace Aero::RT::Math {
 	// point3 is just an alias for vec3, but useful for geometric clarity in the code.
 	using point3 = Aero::RT::Math::vec3<double>;
 
-	// Google Highway ops
-	inline hn::Vec<double> operator+(hn::Vec<double> a, hn::Vec<double> b) { return hn::Add(d, a, b); }
-	inline hn::Vec<double> operator-(hn::Vec<double> a, hn::Vec<double> b) { return hn::Sub(d, a, b); }
-	inline hn::Vec<double> operator*(hn::Vec<double> a, hn::Vec<double> b) { return hn::Mul(d, a, b); }
-	inline hn::Vec<double> operator/(hn::Vec<double> a, hn::Vec<double> b) { return hn::Div(d, a, b); }
-
 	// Vector Utility Functions (double)
 
 	inline std::ostream& operator<<(std::ostream& out, const vec3<double>& v) {

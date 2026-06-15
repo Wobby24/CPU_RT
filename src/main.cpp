@@ -26,6 +26,8 @@
 
 namespace hn = hwy::HWY_NAMESPACE;
 
+
+// functoin reports using SSE2, but our CPU is capable of AVX2 (4 floats vs 8 floats) so we need to dynamically dispatch. It's most likely it falls back to a stable SIMD instruction set
 void testSIMDAlignment() {
     // 1. Define our hardware vector descriptor for 32-bit floats
     constexpr hn::ScalableTag<float> d;
@@ -67,7 +69,7 @@ int main() {
 
     // dont do this, make a scene class for the love of all things good. the scene class can the pass its hittable list to the renderer and we shuld be good
 
-    switch (10) {
+    switch (7) {
         case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam, options);  break;
         case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam, options); break;
         case 3: Aero::RT::Demo_Scenes::earth(world, cam, options); break;

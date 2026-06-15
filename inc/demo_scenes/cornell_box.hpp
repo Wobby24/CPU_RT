@@ -23,8 +23,8 @@ namespace Aero::RT::Demo_Scenes {
         auto green = std::make_shared<Materials::lambertian>(Utils::color(.12, .45, .15));
         auto light = std::make_shared<Materials::diffuse_light>(Utils::color(15, 15, 15));
 
-        world.add(std::make_shared<Geometry::quad>(Math::point3(555, 0, 0), Math::vec3<double>(0, 555, 0), Math::vec3<double>(0, 0, 555), green));
-        world.add(std::make_shared<Geometry::quad>(Math::point3(0, 0, 0), Math::vec3<double>(0, 555, 0), Math::vec3<double>(0, 0, 555), red));
+        world.add(std::make_shared<Geometry::quad>(Math::point3(555, 0, 0), Math::vec3<double>(0, 555, 0), Math::vec3<double>(0, 0, 555), red));
+        world.add(std::make_shared<Geometry::quad>(Math::point3(0, 0, 0), Math::vec3<double>(0, 555, 0), Math::vec3<double>(0, 0, 555), green));
         world.add(std::make_shared<Geometry::quad>(Math::point3(343, 554, 332), Math::vec3<double>(-130, 0, 0), Math::vec3<double>(0, 0, -105), light));
         world.add(std::make_shared<Geometry::quad>(Math::point3(0, 0, 0), Math::vec3<double>(555, 0, 0), Math::vec3<double>(0, 0, 555), white));
         world.add(std::make_shared<Geometry::quad>(Math::point3(555, 555, 555), Math::vec3<double>(-555, 0, 0), Math::vec3<double>(0, 0, -555), white));
