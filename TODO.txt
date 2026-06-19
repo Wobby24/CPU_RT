@@ -1,8 +1,3 @@
 # TODO
 
-Multithreaded recovery seems broken. AFD might either be written to incorrectly and/or we can't resume the tiles correctly. When we close, some tiles might not have been fully rendered to, and there
-isn't a great way to render to them if not fully finished. We could mark fully finished tiles and partially finsihed tiles to make this better. Test the recovery mechanism without threading and see if it 
-still fails. If it doesn't, that means it's a threading problem (most likely race condition or some kind of UDB). Otherwise, it's a logic flaw.
-
-Refactor renderer to use SoA, remove most inheritance and traditional OOP structures or ideas. You'll want to get good with Google Highway first, then read up on SIMD principles, and lastly try to 
-abstract it a bit better for it to correctly be SIMD compatible. Programming the intersection code for SIMD and reformating it for SoA instead of AoS and OOP will be the hardest part.
+make non simd vec4 class, then simd vec4 class. READ UP ON THE PAPER!

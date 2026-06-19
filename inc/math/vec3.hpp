@@ -3,10 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include "util/common.hpp"
-#include <hwy/highway.h>
 
-namespace hn = hwy::HWY_NAMESPACE;
-const hn::ScalableTag<double> d;
 
 namespace Aero::RT::Math {
 	template <typename T>
@@ -30,6 +27,13 @@ namespace Aero::RT::Math {
 			e[0] += v.e[0];
 			e[1] += v.e[1];
 			e[2] += v.e[2];
+			return *this;
+		}
+
+		vec3& operator-=(const vec3& v) {
+			e[0] -= v.e[0];
+			e[1] -= v.e[1];
+			e[2] -= v.e[2];
 			return *this;
 		}
 

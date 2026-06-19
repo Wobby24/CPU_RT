@@ -1,6 +1,6 @@
 #include "math/ray.hpp"
 #include "math/vec3.hpp" 
-
+#include "hwy/highway.h"
 namespace Aero::RT::Math {
 	ray::ray() {}
 

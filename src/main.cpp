@@ -19,40 +19,68 @@
 #include "demo_scenes/book_2_final_scene.hpp"
 
 #include "OGL_RT_TextureView.hpp"
-#include "hwy/highway.h"
+#include "math/ray.hpp"
+#include "math/vec3.hpp"
 #include "CPU_Raytracer.hpp"
 #include "renderer/renderOptions.hpp"
 #include "renderer/tile.hpp"
+#include "simd/vec4_simd.hpp"
+#include "math/vec4.hpp"
+#include <chrono>
 
-namespace hn = hwy::HWY_NAMESPACE;
-
-
-// functoin reports using SSE2, but our CPU is capable of AVX2 (4 floats vs 8 floats) so we need to dynamically dispatch. It's most likely it falls back to a stable SIMD instruction set
 void testSIMDAlignment() {
-    // 1. Define our hardware vector descriptor for 32-bit floats
-    constexpr hn::ScalableTag<float> d;
-    size_t lanes = hn::Lanes(d);
+    constexpr size_t ITERATIONS = 10'000'000; // 10 million iterations
+    std::cout << "Running benchmark with " << ITERATIONS << " iterations...\n\n";
 
-    std::cout << "[SIMD Test] Your CPU is processing " << lanes << " floats per register!\n";
+    // -------------------------------------------------------------
+    // 1. BENCHMARK STANDARD CLASS
+    // -------------------------------------------------------------
+    {
+        using Aero::RT::Math::vec4;
+        vec4<double> total(0.0, 0.0, 0.0, 0.0);
+        vec4<double> step(1.0, 1.1, 1.2, 1.3);
+        double total_length = 0.0;
 
-    // 2. Create some basic mock data matching our lane size
-    std::vector<float> arrayA(lanes, 10.0f); // Fill with 10.0
-    std::vector<float> arrayB(lanes, 5.5f);  // Fill with 5.5
-    std::vector<float> arrayC(lanes, 0.0f);  // Storage for results
+        auto start = std::chrono::high_resolution_clock::now();
 
-    // 3. THE SIMD OPERATION:
-    // Load data from normal RAM into SIMD hardware registers
-    auto vecA = hn::Load(d, arrayA.data());
-    auto vecB = hn::Load(d, arrayB.data());
+        for (size_t i = 0; i < ITERATIONS; ++i) {
+            total += step;
+            total *= 1.00001;
+            total_length += total.length_squared();
+        }
 
-    // Execute ONE instruction to add all lanes simultaneously!
-    auto vecResult = hn::Add(vecA, vecB);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> duration = end - start;
 
-    // Store the hardware register data back into standard RAM
-    hn::Store(vecResult, d, arrayC.data());
+        std::cout << "--- Standard vec4<double> Result ---\n";
+        std::cout << "Time taken: " << duration.count() << " ms\n";
+        std::cout << "Dummy output (prevents optimization): " << total.x() + total_length << "\n\n";
+    }
 
-    // 4. Verify the silicon did the math right
-    std::cout << "[SIMD Test] Result at index 0: " << arrayC[0] << " (Expected: 15.5)\n";
+    // -------------------------------------------------------------
+    // 2. BENCHMARK SIMD CLASS
+    // -------------------------------------------------------------
+    {
+        using Aero::RT::Simd::vec4_simd;
+        vec4_simd total(0.0, 0.0, 0.0, 0.0);
+        vec4_simd step(1.0, 1.1, 1.2, 1.3);
+        double total_length = 0.0;
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+        for (size_t i = 0; i < ITERATIONS; ++i) {
+            total += step;
+            total *= 1.00001;
+            total_length += total.length_squared();
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> duration = end - start;
+
+        std::cout << "--- SIMD vec4_simd Result ---\n";
+        std::cout << "Time taken: " << duration.count() << " ms\n";
+        std::cout << "Dummy output (prevents optimization): " << total.x() + total_length << "\n\n";
+    }
 }
 
 int main() {
@@ -82,32 +110,32 @@ int main() {
         case 10: Aero::RT::Demo_Scenes::book_2_final_scene(world, cam, options, false); break; // LQ render
     }
 
-    cam.initialize(options.width, options.height);
+   // cam.initialize(options.width, options.height);
     testSIMDAlignment();
 
-    std::vector<Aero::RT::Renderer::tile> tiles = Aero::RT::Renderer::dispatchTiles(options.width, options.height, options.tile_size);
+  //  std::vector<Aero::RT::Renderer::tile> tiles = Aero::RT::Renderer::dispatchTiles(options.width, options.height, options.tile_size);
 
     // eventually we wont need this and can just move it onto threadpool
-    std::thread tracerThread([&, tiles]() {
-        renderer.render(cam, world, options);
-     });
+  //  std::thread tracerThread([&, tiles]() {
+     //   renderer.render(cam, world, options);
+   //  });
 
     // pre-allocate our framebuffer that the output viewer displays
-    std::vector<uint32_t> bufferCopy(options.width * options.height);
+  //  std::vector<uint32_t> bufferCopy(options.width * options.height);
 
     // Interactive responsive execution window loop
-    while (!texViewer.shouldWindowClose()) {
-        renderer.copy_framebuffer(bufferCopy);
+ //   while (!texViewer.shouldWindowClose()) {
+    //    renderer.copy_framebuffer(bufferCopy);
 
-        texViewer.renderToTexture(bufferCopy, options.width, options.height);
+     //   texViewer.renderToTexture(bufferCopy, options.width, options.height);
 
         // Frame limiter rest slice to avoid maxing out a full primary thread pipeline state
-        std::this_thread::sleep_for(std::chrono::milliseconds(16));
-    }
-    renderer.stop_rendering();
-   if (tracerThread.joinable()) {
-        tracerThread.join();
-    }
+      //  std::this_thread::sleep_for(std::chrono::milliseconds(16));
+  //  }
+  //  renderer.stop_rendering();
+  // if (tracerThread.joinable()) {
+  //      tracerThread.join();
+  //  }
 
     return 0;
 }

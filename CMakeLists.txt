@@ -29,6 +29,21 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(highway)
 
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.tar.gz
+)
+FetchContent_MakeAvailable(googletest)
+
+
+FetchContent_Declare(
+    doxygen
+    GIT_REPOSITORY https://github.com/doxygen/doxygen.git
+    GIT_TAG        Release_1_17_0
+)
+
+FetchContent_MakeAvailable(highway)
+
 # Default to Debug
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)

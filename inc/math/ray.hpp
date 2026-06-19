@@ -1,6 +1,7 @@
 #pragma once 
 
 #include "math/vec3.hpp" 
+#include "hwy/highway.h"
 
 namespace Aero::RT::Math {
 	class ray {

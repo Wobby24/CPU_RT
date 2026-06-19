@@ -8,6 +8,8 @@
 #include "util/getNextValidPPMLine.hpp"
 #include <filesystem>
 
+namespace hn = hwy::HWY_NAMESPACE;
+
 namespace Aero::RT {
     Aero_CPU_RT::Aero_CPU_RT() {}
 
@@ -21,7 +23,7 @@ namespace Aero::RT {
                 std::lock_guard<std::mutex> lock(framebufferMutex);
                 framebuffer.assign(ctx.width * ctx.height, 0);
             }
- 
+  
             ppmFramebuffer.assign(ctx.width * ctx.height, Utils::color(0, 0, 0));
 
             std::vector<Renderer::tile> tiles = Renderer::dispatchTiles(ctx.width, ctx.height, ctx.tile_size);
