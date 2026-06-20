@@ -24,7 +24,8 @@
 #include "CPU_Raytracer.hpp"
 #include "renderer/renderOptions.hpp"
 #include "renderer/tile.hpp"
-#include "simd/vec4_simd.hpp"
+#include "simd/vec4d_simd.hpp"
+#include "simd/vec4f_simd.hpp"
 #include "math/vec4.hpp"
 #include <chrono>
 
@@ -36,9 +37,9 @@ void testSIMDAlignment() {
     // 1. BENCHMARK STANDARD CLASS
     // -------------------------------------------------------------
     {
-        using Aero::RT::Math::vec4;
-        vec4<double> total(0.0, 0.0, 0.0, 0.0);
-        vec4<double> step(1.0, 1.1, 1.2, 1.3);
+        using Aero::RT::Simd::vec4d_simd;
+        vec4d_simd total(0.0, 0.0, 0.0, 0.0);
+        vec4d_simd step(1.0, 1.1, 1.2, 1.3);
         double total_length = 0.0;
 
         auto start = std::chrono::high_resolution_clock::now();
@@ -61,9 +62,9 @@ void testSIMDAlignment() {
     // 2. BENCHMARK SIMD CLASS
     // -------------------------------------------------------------
     {
-        using Aero::RT::Simd::vec4_simd;
-        vec4_simd total(0.0, 0.0, 0.0, 0.0);
-        vec4_simd step(1.0, 1.1, 1.2, 1.3);
+        using Aero::RT::Simd::vec4f_simd;
+        vec4f_simd total(0.0, 0.0, 0.0, 0.0);
+        vec4f_simd step(1.0, 1.1, 1.2, 1.3);
         double total_length = 0.0;
 
         auto start = std::chrono::high_resolution_clock::now();

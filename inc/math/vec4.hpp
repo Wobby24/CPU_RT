@@ -13,6 +13,8 @@ namespace Aero::RT::Math {
 
 		vec4() : e{ T{}, T{}, T{}, T{} } {}
 		vec4(T e0, T e1, T e2, T e3) : e{ e0, e1, e2, e3 } {}
+		// allow for intializing with 3 elements to ensure we can maintain compatiblity with vec3
+		vec4(T e0, T e1, T e2) : e{ e0, e1, e2, 0 } {}
 
 		T x() const { return e[0]; }
 		T y() const { return e[1]; }

@@ -1,3 +1,4 @@
 # TODO
 
-make non simd vec4 class, then simd vec4 class. READ UP ON THE PAPER!
+improve vec4f dot and cross product
+SSE 4.1 should be your baseline for SSE support. No CPU from 2001 should be running this software!
