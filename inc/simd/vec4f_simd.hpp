@@ -32,7 +32,7 @@ namespace Aero::RT::Simd {
 		// first arugment will be lane 3, second lane 2, third lane 1, and last one is lane 0
 		float y() const {
 			// 4th number is 1 -> Grabs Y and puts it in Lane 0
-			// Y is stored in lane 1, and so we put it lane 0, hencc e we can read it normally
+			// Y is stored in lane 1, and so we put it lane 0, hencc e we can read it normally. No perf impact copying y to every lane, although you could do (3, 2, 1, 1) to copy lane 1 to lane 0
 			return _mm_cvtss_f32(_mm_shuffle_ps(var, var, _MM_SHUFFLE(1, 1, 1, 1)));
 		}
 
@@ -106,19 +106,42 @@ namespace Aero::RT::Simd {
 			return *this;
 		}
 
+		// there is a better method btw!
 		float length_squared() const {
-			// 1. Square the components
-			__m128 total = _mm_mul_ps(var, var); // [x^2, y^2, z^2, w^2]
+			// first, we square the register
+			__m128 squaredReg = _mm_mul_ps(var, var); // [x^2, y^2, z^2, w^2]
 
-			// 5. Square root of just the scalar lower slot
-			return _mm_cvtss_f32(total);
+			// then we create a new vector that completely flips squared reg
+			__m128 squaredRegFlipped = _mm_shuffle_ps(squaredReg, squaredReg, _MM_SHUFFLE(0, 1, 2, 3));// [w^2, z^2, y^2, x^2]
+
+			// add the 2 
+			__m128 sum1 = _mm_add_ps(squaredRegFlipped, squaredReg); // results in [x^2 + w^2, y^2 + z^2, z^2 + y^2, w^2 + x^2]
+
+			// now we just need to take lanes 0 and 1 of sum1 and shuffle them together
+			__m128 shuf = _mm_shuffle_ps(sum1, sum1, _MM_SHUFFLE(3, 2, 0, 1));
+
+			// add them 
+			__m128 total = _mm_add_ps(sum1, shuf);
+			// output 
+			 return _mm_cvtss_f32(total);
 		}
 
 		float length() const {
-			// 1. Square the components
-			__m128 total = _mm_mul_ps(var, var); // [x^2, y^2, z^2, w^2]
+			// first we square var
+			__m128 squaredReg = _mm_mul_ps(var, var); // [x^2, y^2, z^2, w^2]
 
-			// 5. Square root of just the scalar lower slot
+			// then, we shuffle to reverse var
+			__m128 squaredRegFlipped = _mm_shuffle_ps(squaredReg, squaredReg, _MM_SHUFFLE(0, 1, 2, 3));// [w, z, y, x]
+
+			// after that, add that and squaredReg
+			__m128 sum0 = _mm_add_ps(squaredReg, squaredRegFlipped); // [x + w, y + z, z + y, x + w]
+
+			// shuffle again to swap lanes 0 and 1
+			__m128 shuf = _mm_shuffle_ps(sum0, sum0, _MM_SHUFFLE(3, 2, 0, 1)); // [x + w, y + z, w + x, z + y]
+
+			// add 
+			__m128 total = _mm_add_ps(sum0, shuf); // lane zero has our product of (x + w) + (z + y)
+			// use _ss instead so we only compute sqrt of the bottom lane, which is the only lane we care about since it has all 4 dimensions added together 
 			return _mm_cvtss_f32(_mm_sqrt_ss(total));
 		}
 
@@ -143,53 +166,44 @@ namespace Aero::RT::Simd {
 		return out << v.x() << ' ' << v.y() << ' ' << v.z() << ' ' << v.w();
 	}
 
-	inline vec4f_simd operator+(const vec4f_simd& u, const vec4f_simd& v) {
-		__m128 newXYZW = _mm_add_ps(u.xyzw_simd(), v.xyzw_simd());
-
-		return vec4f_simd(newXYZW);
+	inline vec4f_simd operator+(const vec4f_simd& u, const vec4f_simd& v) {	
+		return vec4f_simd(_mm_add_ps(u.xyzw_simd(), v.xyzw_simd()));
 	}
 
 	inline vec4f_simd operator-(const vec4f_simd& u, const vec4f_simd& v) {
-		__m128 newXYZW = _mm_sub_ps(u.xyzw_simd(), v.xyzw_simd());
-
-		return vec4f_simd(newXYZW);
+		return vec4f_simd(_mm_sub_ps(u.xyzw_simd(), v.xyzw_simd()));
 	}
 
 	inline vec4f_simd operator*(const vec4f_simd& u, const vec4f_simd& v) {
-		__m128 newXYZW = _mm_mul_ps(u.xyzw_simd(), v.xyzw_simd());
-		return vec4f_simd(newXYZW);
+		return vec4f_simd(_mm_mul_ps(u.xyzw_simd(), v.xyzw_simd()));
 	}
 
 	inline vec4f_simd operator*(float t, const vec4f_simd& v) {
-		__m128 setScalar = _mm_set1_ps(t);
-		__m128 newXYZW = _mm_mul_ps(v.xyzw_simd(), setScalar);
-
-		return vec4f_simd(newXYZW);
+		return vec4f_simd(_mm_mul_ps(v.xyzw_simd(), _mm_set1_ps(t)));
 	}
 
 	inline vec4f_simd operator*(const vec4f_simd& v, float t) {
-		__m128 setScalar = _mm_set1_ps(t);
-		__m128 newXYZW = _mm_mul_ps(v.xyzw_simd(), setScalar);
-
-		return vec4f_simd(newXYZW);
+		return vec4f_simd(_mm_mul_ps(v.xyzw_simd(), _mm_set1_ps(t)));
 	}
 
 
 	inline vec4f_simd operator/(const vec4f_simd& v, float t) {
-		__m128 setScalar = _mm_set1_ps(t);
-		__m128 newXYZW = _mm_div_ps(v.xyzw_simd(), setScalar);
-
-		return vec4f_simd(newXYZW);
+		return vec4f_simd(_mm_div_ps(v.xyzw_simd(), _mm_set1_ps(t)));
 	}
 
 	// super inefficient. surely there is a better way. SSE 4.1 has a dot product method
 	inline float dot(const vec4f_simd& u, const vec4f_simd& v) {
-		//	return u.x() * v.x() + u.y() * v.y() + u.z() * v.z() + u.w() * v.w();
-			// square everything
-		__m128 mulXYZW = _mm_mul_ps(u.xyzw_simd(), v.xyzw_simd());
-		__m128 sum = _mm_hadd_ps(mulXYZW, mulXYZW); // [X+Y, Z+W, X+Y, Z+W]
-		// add up mulxy and zw with vertical then horizontally add those up
-		return _mm_cvtss_f32(_mm_hadd_ps(sum, sum));
+		__m128 mul = _mm_mul_ps(u.xyzw_simd(), v.xyzw_simd());
+
+		// Shuffle high half to low half: [Z, W, ?, ?]
+		__m128 shuf = _mm_shuffle_ps(mul, mul, _MM_SHUFFLE(2, 3, 0, 1));
+		__m128 sum = _mm_add_ps(mul, shuf); // [X+Z, Y+W, ?, ?]
+
+		// Shuffle the Y+W component down to lane 0
+		shuf = _mm_shuffle_ps(sum, sum, _MM_SHUFFLE(1, 1, 1, 1));
+		sum = _mm_add_ps(sum, shuf); // [(X+Z) + (Y+W), ?, ?, ?]
+
+		return _mm_cvtss_f32(sum);
 	}
 
 	// cross product is a 3d operation, so we ignore w

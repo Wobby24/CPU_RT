@@ -1,4 +1,3 @@
 # TODO
 
-improve vec4f dot and cross product
-SSE 4.1 should be your baseline for SSE support. No CPU from 2001 should be running this software!
+vec4f is slower than expected. Barely faster than the vec4d class. Maybe a bottleneck in memory?? maybe not?? idk 

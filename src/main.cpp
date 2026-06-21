@@ -29,6 +29,15 @@
 #include "math/vec4.hpp"
 #include <chrono>
 
+// Step 1: Detect the compiler and include the proper headers
+#if defined(_MSC_VER)
+#include <intrin.h> // Header for MSVC intrinsics
+#elif defined(__GNUC__) || defined(__clang__)
+#include <cpuid.h>  // Header for GCC/Clang intrinsics
+#else
+#error "Unsupported compiler"
+#endif
+
 void testSIMDAlignment() {
     constexpr size_t ITERATIONS = 10'000'000; // 10 million iterations
     std::cout << "Running benchmark with " << ITERATIONS << " iterations...\n\n";
@@ -84,6 +93,33 @@ void testSIMDAlignment() {
     }
 }
 
+void run_cpuid(uint32_t leaf, uint32_t subleaf, uint32_t registers[4]) {
+#if defined(_MSC_VER)
+    // MSVC uses an array of 4 signed integers
+    __cpuidex(reinterpret_cast<int*>(registers), leaf, subleaf);
+#elif defined(__GNUC__) || defined(__clang__)
+    // GCC/Clang uses a specific macro that manages clobbered registers safely
+    __cpuid_count(leaf, subleaf, registers[0], registers[1], registers[2], registers[3]);
+#endif
+}
+
+void getCPUInfo() {
+    uint32_t regs[4] = { 0 };
+
+    // Query Leaf 0: Get Maximum Leaf ID and Vendor String
+    run_cpuid(0, 0, regs);
+
+    // The 12-character Vendor String is split across EBX, EDX, and ECX
+    char vendor[13];
+    std::memcpy(vendor, &regs[1], 4);     // EBX
+    std::memcpy(vendor + 4, &regs[3], 4); // EDX
+    std::memcpy(vendor + 8, &regs[2], 4); // ECX
+    vendor[12] = '\0';                    // Null-terminate string
+
+    std::cout << "Max supported CPUID leaf: " << regs[0] << std::endl;
+    std::cout << "CPU Vendor String: " << vendor << std::endl;
+}
+
 int main() {
    
     // get our data setup
@@ -111,32 +147,33 @@ int main() {
         case 10: Aero::RT::Demo_Scenes::book_2_final_scene(world, cam, options, false); break; // LQ render
     }
 
-   // cam.initialize(options.width, options.height);
+ //   cam.initialize(options.width, options.height);
     testSIMDAlignment();
+ //   getCPUInfo();
 
-  //  std::vector<Aero::RT::Renderer::tile> tiles = Aero::RT::Renderer::dispatchTiles(options.width, options.height, options.tile_size);
+  /* std::vector<Aero::RT::Renderer::tile> tiles = Aero::RT::Renderer::dispatchTiles(options.width, options.height, options.tile_size);
 
     // eventually we wont need this and can just move it onto threadpool
-  //  std::thread tracerThread([&, tiles]() {
-     //   renderer.render(cam, world, options);
-   //  });
+    std::thread tracerThread([&, tiles]() {
+        renderer.render(cam, world, options);
+    });
 
     // pre-allocate our framebuffer that the output viewer displays
-  //  std::vector<uint32_t> bufferCopy(options.width * options.height);
+    std::vector<uint32_t> bufferCopy(options.width * options.height);
 
     // Interactive responsive execution window loop
- //   while (!texViewer.shouldWindowClose()) {
-    //    renderer.copy_framebuffer(bufferCopy);
+    while (!texViewer.shouldWindowClose()) {
+        renderer.copy_framebuffer(bufferCopy);
 
-     //   texViewer.renderToTexture(bufferCopy, options.width, options.height);
+        texViewer.renderToTexture(bufferCopy, options.width, options.height);
 
         // Frame limiter rest slice to avoid maxing out a full primary thread pipeline state
-      //  std::this_thread::sleep_for(std::chrono::milliseconds(16));
-  //  }
-  //  renderer.stop_rendering();
-  // if (tracerThread.joinable()) {
-  //      tracerThread.join();
-  //  }
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    }
+    renderer.stop_rendering();
+   if (tracerThread.joinable()) {
+        tracerThread.join();
+    } */ 
 
     return 0;
 }
