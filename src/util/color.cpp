@@ -16,6 +16,7 @@ namespace Aero::RT::Utils {
 		return 0;
 	}
 
+//delete clamping to ensure we are doing HDR, not SDR
 	void write_color(std::ostream& out, const color& pixel_color) {
 		auto r = pixel_color.x();
 		auto g = pixel_color.y();
