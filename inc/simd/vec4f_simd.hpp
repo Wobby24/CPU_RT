@@ -63,6 +63,8 @@ namespace Aero::RT::Simd {
 
 		__m128 xyzw_simd() const { return var; }
 
+		float operator[](int i) const { return _mm_cvtss_f32(_mm_shuffle_ps(var, var, _MM_SHUFFLE(i, i, i, i))); }
+
 		// A cleaner, pure-SIMD way to negate without dropping to scalar floats
 		vec4f_simd operator-() const {
 			// The highest bit of a float represents the sign. 
@@ -106,7 +108,9 @@ namespace Aero::RT::Simd {
 			return *this;
 		}
 
-		// there is a better method btw!
+		
+
+		// there is a better method btw via movehl
 		float length_squared() const {
 			// first, we square the register
 			__m128 squaredReg = _mm_mul_ps(var, var); // [x^2, y^2, z^2, w^2]

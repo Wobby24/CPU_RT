@@ -121,7 +121,7 @@ void getCPUInfo() {
 }
 
 int main() {
-   
+
     // get our data setup
     Aero::RT::Aero_CPU_RT renderer;
     Aero::RT::renderOptions options;
@@ -135,28 +135,28 @@ int main() {
     // dont do this, make a scene class for the love of all things good. the scene class can the pass its hittable list to the renderer and we shuld be good
 
     switch (7) {
-        case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam, options);  break;
-        case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam, options); break;
-        case 3: Aero::RT::Demo_Scenes::earth(world, cam, options); break;
-        case 4: Aero::RT::Demo_Scenes::perlin_spheres(world, cam, options); break;
-        case 5: Aero::RT::Demo_Scenes::quads(world, cam, options); break;
-        case 6: Aero::RT::Demo_Scenes::simple_lights(world, cam, options); break;
-        case 7: Aero::RT::Demo_Scenes::cornell_box(world, cam, options); break;
-        case 8: Aero::RT::Demo_Scenes::cornell_smoke_boxes(world, cam, options); break;
-        case 9: Aero::RT::Demo_Scenes::book_2_final_scene(world, cam, options, true); break; // HQ render
-        case 10: Aero::RT::Demo_Scenes::book_2_final_scene(world, cam, options, false); break; // LQ render
+    case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam, options);  break;
+    case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam, options); break;
+    case 3: Aero::RT::Demo_Scenes::earth(world, cam, options); break;
+    case 4: Aero::RT::Demo_Scenes::perlin_spheres(world, cam, options); break;
+    case 5: Aero::RT::Demo_Scenes::quads(world, cam, options); break;
+    case 6: Aero::RT::Demo_Scenes::simple_lights(world, cam, options); break;
+    case 7: Aero::RT::Demo_Scenes::cornell_box(world, cam, options); break;
+    case 8: Aero::RT::Demo_Scenes::cornell_smoke_boxes(world, cam, options); break;
+    case 9: Aero::RT::Demo_Scenes::book_2_final_scene(world, cam, options, true); break; // HQ render
+    case 10: Aero::RT::Demo_Scenes::book_2_final_scene(world, cam, options, false); break; // LQ render
     }
 
- //   cam.initialize(options.width, options.height);
-    testSIMDAlignment();
+    cam.initialize(options.width, options.height);
+    //testSIMDAlignment();
  //   getCPUInfo();
 
-  /* std::vector<Aero::RT::Renderer::tile> tiles = Aero::RT::Renderer::dispatchTiles(options.width, options.height, options.tile_size);
+    std::vector<Aero::RT::Renderer::tile> tiles = Aero::RT::Renderer::dispatchTiles(options.width, options.height, options.tile_size);
 
     // eventually we wont need this and can just move it onto threadpool
     std::thread tracerThread([&, tiles]() {
         renderer.render(cam, world, options);
-    });
+        });
 
     // pre-allocate our framebuffer that the output viewer displays
     std::vector<uint32_t> bufferCopy(options.width * options.height);
@@ -171,9 +171,9 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
     renderer.stop_rendering();
-   if (tracerThread.joinable()) {
+    if (tracerThread.joinable()) {
         tracerThread.join();
-    } */ 
+    }
 
     return 0;
 }
