@@ -6,10 +6,10 @@
 namespace Aero::RT::Renderer {
 	struct tile {
         tile() {};
-		int x_start;
-		int y_start;
-		int x_end;
-		int y_end;
+		int x_start = 0;
+		int y_start = 0;
+		int x_end = 0;
+		int y_end = 0;
 	};
 
     inline std::vector<tile> dispatchTiles(int width, int height, int tile_size) {

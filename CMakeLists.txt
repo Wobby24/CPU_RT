@@ -16,18 +16,13 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(OGL_RT_TextureView)
 
-# Disable Highway's heavy testing and benchmark suites
-set(HWY_ENABLE_TESTS OFF CACHE BOOL "Disable Highway tests" FORCE)
-set(HWY_ENABLE_EXAMPLES OFF CACHE BOOL "Disable Highway examples" FORCE)
-set(HWY_ENABLE_CONTRIB ON CACHE BOOL "Enable Highway contrib (useful math types)" FORCE)
-
 FetchContent_Declare(
-    highway
-    GIT_REPOSITORY https://github.com/google/highway.git
-    GIT_TAG        1.4.0
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG        v3.12.0
 )
 
-FetchContent_MakeAvailable(highway)
+FetchContent_MakeAvailable(json)
 
 FetchContent_Declare(
   googletest
@@ -36,13 +31,13 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 
-FetchContent_Declare(
-    doxygen
-    GIT_REPOSITORY https://github.com/doxygen/doxygen.git
-    GIT_TAG        Release_1_17_0
-)
+#FetchContent_Declare(
+#    doxygen
+#    GIT_REPOSITORY https://github.com/doxygen/doxygen.git
+#    GIT_TAG        Release_1_17_0
+#)
 
-FetchContent_MakeAvailable(highway)
+#FetchContent_MakeAvailable(doxygen)
 
 # Default to Debug
 if(NOT CMAKE_BUILD_TYPE)
@@ -61,6 +56,10 @@ set(LIBRARY_DIR "${CMAKE_SOURCE_DIR}/lib")
 set(CAMERA_SOURCES
     "${SRC_DIR}/camera/camera.cpp"
 ) 
+
+set(SCENE_SOURCES
+    "${SRC_DIR}/scene/scene.cpp"
+)
 
 set(GEOMETRY_SOURCES
     "${SRC_DIR}/geometry/hittable.cpp"
@@ -101,7 +100,7 @@ set(TEXTURE_SOURCES
     "${SRC_DIR}/textures/noise_texture.cpp"
 )
 
-# List Source files
+# List Source files 
 set(PROJECT_SOURCES
     ${MATH_SOURCES}
     ${MATERIALS_SOURCES}
@@ -131,9 +130,6 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE  OGL_RT_TextureView::OGL_RT_TextureView)
-
-# Assuming your target is named Aero_CPU_RT or CPURaytracer
-target_link_libraries(${PROJECT_NAME} PRIVATE hwy)
 
 # Includes
 target_include_directories(${PROJECT_NAME}

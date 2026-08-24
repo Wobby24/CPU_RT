@@ -8,8 +8,6 @@
 #include "util/getNextValidPPMLine.hpp"
 #include <filesystem>
 
-namespace hn = hwy::HWY_NAMESPACE;
-
 namespace Aero::RT {
     Aero_CPU_RT::Aero_CPU_RT() {}
 

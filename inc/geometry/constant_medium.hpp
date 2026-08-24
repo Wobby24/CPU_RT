@@ -17,6 +17,7 @@ namespace Aero::RT::Geometry {
         constant_medium(std::shared_ptr<hittable> boundary, double density, const Utils::color& albedo);
 
         bool hit(const Math::ray& r, Math::interval ray_t, hit_record& rec) const override;
+
         Math::aabb bounding_box() const override;
     private:
         std::shared_ptr<hittable> boundary_;

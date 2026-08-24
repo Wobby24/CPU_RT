@@ -63,7 +63,7 @@ namespace Aero::RT::Simd {
 
 		__m128 xyzw_simd() const { return var; }
 
-		float operator[](int i) const { return _mm_cvtss_f32(_mm_shuffle_ps(var, var, _MM_SHUFFLE(i, i, i, i))); }
+		//float operator[](int i) { return _mm_cvtss_f32(_mm_shuffle_ps(var, var, _MM_SHUFFLE(i, i, i, i))); }
 
 		// A cleaner, pure-SIMD way to negate without dropping to scalar floats
 		vec4f_simd operator-() const {

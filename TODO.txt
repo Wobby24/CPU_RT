@@ -1,3 +1,3 @@
 # TODO
 
-vectorize other math types and geometry types. then finally vectorize the integrator.hpp ray color function and aabb bvh traversal
+Scrap SIMD - too tedious for now, and more stuff can be improved for more gains and less problems. Focus on BVH optimization - mainly adding surface area heuristic, and improving memory traversal strategies

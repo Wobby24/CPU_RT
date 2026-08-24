@@ -1,6 +1,8 @@
 # Wobby's CPU_RT
 A raytracing engine (technically pathtracing) that is ment to be an improvement over my previous engine. It supports more features, cleaner code, better performance, and new ideas for better development iteration.
 
+![CPU Path Tracer](repo/render.gif)
+
 ## Goals
 
 1. Triangle rendering

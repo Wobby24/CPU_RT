@@ -24,101 +24,9 @@
 #include "CPU_Raytracer.hpp"
 #include "renderer/renderOptions.hpp"
 #include "renderer/tile.hpp"
-#include "simd/vec4d_simd.hpp"
-#include "simd/vec4f_simd.hpp"
+
 #include "math/vec4.hpp"
 #include <chrono>
-
-// Step 1: Detect the compiler and include the proper headers
-#if defined(_MSC_VER)
-#include <intrin.h> // Header for MSVC intrinsics
-#elif defined(__GNUC__) || defined(__clang__)
-#include <cpuid.h>  // Header for GCC/Clang intrinsics
-#else
-#error "Unsupported compiler"
-#endif
-
-void testSIMDAlignment() {
-    constexpr size_t ITERATIONS = 10'000'000; // 10 million iterations
-    std::cout << "Running benchmark with " << ITERATIONS << " iterations...\n\n";
-
-    // -------------------------------------------------------------
-    // 1. BENCHMARK STANDARD CLASS
-    // -------------------------------------------------------------
-    {
-        using Aero::RT::Simd::vec4d_simd;
-        vec4d_simd total(0.0, 0.0, 0.0, 0.0);
-        vec4d_simd step(1.0, 1.1, 1.2, 1.3);
-        double total_length = 0.0;
-
-        auto start = std::chrono::high_resolution_clock::now();
-
-        for (size_t i = 0; i < ITERATIONS; ++i) {
-            total += step;
-            total *= 1.00001;
-            total_length += total.length_squared();
-        }
-
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> duration = end - start;
-
-        std::cout << "--- Standard vec4<double> Result ---\n";
-        std::cout << "Time taken: " << duration.count() << " ms\n";
-        std::cout << "Dummy output (prevents optimization): " << total.x() + total_length << "\n\n";
-    }
-
-    // -------------------------------------------------------------
-    // 2. BENCHMARK SIMD CLASS
-    // -------------------------------------------------------------
-    {
-        using Aero::RT::Simd::vec4f_simd;
-        vec4f_simd total(0.0, 0.0, 0.0, 0.0);
-        vec4f_simd step(1.0, 1.1, 1.2, 1.3);
-        double total_length = 0.0;
-
-        auto start = std::chrono::high_resolution_clock::now();
-
-        for (size_t i = 0; i < ITERATIONS; ++i) {
-            total += step;
-            total *= 1.00001;
-            total_length += total.length_squared();
-        }
-
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> duration = end - start;
-
-        std::cout << "--- SIMD vec4_simd Result ---\n";
-        std::cout << "Time taken: " << duration.count() << " ms\n";
-        std::cout << "Dummy output (prevents optimization): " << total.x() + total_length << "\n\n";
-    }
-}
-
-void run_cpuid(uint32_t leaf, uint32_t subleaf, uint32_t registers[4]) {
-#if defined(_MSC_VER)
-    // MSVC uses an array of 4 signed integers
-    __cpuidex(reinterpret_cast<int*>(registers), leaf, subleaf);
-#elif defined(__GNUC__) || defined(__clang__)
-    // GCC/Clang uses a specific macro that manages clobbered registers safely
-    __cpuid_count(leaf, subleaf, registers[0], registers[1], registers[2], registers[3]);
-#endif
-}
-
-void getCPUInfo() {
-    uint32_t regs[4] = { 0 };
-
-    // Query Leaf 0: Get Maximum Leaf ID and Vendor String
-    run_cpuid(0, 0, regs);
-
-    // The 12-character Vendor String is split across EBX, EDX, and ECX
-    char vendor[13];
-    std::memcpy(vendor, &regs[1], 4);     // EBX
-    std::memcpy(vendor + 4, &regs[3], 4); // EDX
-    std::memcpy(vendor + 8, &regs[2], 4); // ECX
-    vendor[12] = '\0';                    // Null-terminate string
-
-    std::cout << "Max supported CPUID leaf: " << regs[0] << std::endl;
-    std::cout << "CPU Vendor String: " << vendor << std::endl;
-}
 
 int main() {
 
@@ -130,10 +38,9 @@ int main() {
     Aero::GL::OGL_RT_TextureViewer texViewer;
 
     options.multithreaded = true;
-    options.threadCount = 8;
+    options.threadCount = 10;
 
     // dont do this, make a scene class for the love of all things good. the scene class can the pass its hittable list to the renderer and we shuld be good
-
     switch (7) {
     case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam, options);  break;
     case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam, options); break;
@@ -148,8 +55,6 @@ int main() {
     }
 
     cam.initialize(options.width, options.height);
-    //testSIMDAlignment();
- //   getCPUInfo();
 
     std::vector<Aero::RT::Renderer::tile> tiles = Aero::RT::Renderer::dispatchTiles(options.width, options.height, options.tile_size);
 

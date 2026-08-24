@@ -25,6 +25,15 @@ namespace Aero::RT::Math {
 		z = interval(box0.z, box1.z);
 	}
 
+	int aabb::longest_axis() const {
+		// Returns the index of the longest axis of the bounding box.
+
+		if (x.size() > y.size())
+			return x.size() > z.size() ? 0 : 2;
+		else
+			return y.size() > z.size() ? 1 : 2;
+	}
+
 	const interval& aabb::axis_interval(int n) const {
 		if (n == 1) return y;
 		if (n == 2) return z;
