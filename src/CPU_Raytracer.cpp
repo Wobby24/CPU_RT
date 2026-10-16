@@ -5,8 +5,10 @@
 #include "camera/camera.hpp"
 #include "renderer/renderOptions.hpp"
 #include "renderer/tile.hpp"
+#include "geometry/bvh.hpp"
 #include "util/getNextValidPPMLine.hpp"
 #include <filesystem>
+#include <scene/scene.hpp>
 
 namespace Aero::RT {
     Aero_CPU_RT::Aero_CPU_RT() {}
@@ -26,7 +28,7 @@ namespace Aero::RT {
 
             std::vector<Renderer::tile> tiles = Renderer::dispatchTiles(ctx.width, ctx.height, ctx.tile_size);
 
-            completedTileCount = recoveryIndex(ctx);
+            //completedTileCount = recoveryIndex(ctx);
 
             isRendering = true;
             isFileWriterRunning = true;
@@ -34,6 +36,73 @@ namespace Aero::RT {
            // Spin up the dedicated file writing background thread
             fileWriterThread = std::thread(&Aero_CPU_RT::fileWriterLoop, this, std::ref(tiles), std::ref(ctx), completedTileCount.load());
 
+            try {
+                if (ctx.multithreaded) {
+                    for (int k = completedTileCount; k < tiles.size(); k++) {
+                        thread_pool.Enqueue([this, k, &tiles, &cam, &world, &ctx]() {
+                            this->renderTiles(k, tiles[k], cam, world, ctx, this->framebuffer, this->ppmFramebuffer);
+                            });
+                    }
+                }
+                else {
+                    for (int k = completedTileCount; k < tiles.size(); k++) {
+                        renderTiles(k, tiles[k], cam, world, ctx, this->framebuffer, this->ppmFramebuffer);
+                    }
+                }
+            }
+            catch (std::exception& e) {
+                std::cout << "Exception: " << e.what() << '\n';
+            }
+            catch (...) {
+                std::cout << "Exception: unknown" << '\n';
+            }
+
+            // check if we need to abort mid-render
+            while (completedTileCount.load() < tiles.size()) {
+                if (!isRendering) {
+                    std::clog << "\nAbort caught in main loop. Attempting to close program...\n";
+                    break;
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            }
+
+            isFileWriterRunning = false;
+
+            // safe to join because the loop condition has been flipped to false
+            if (fileWriterThread.joinable()) {
+                fileWriterThread.join();
+            }
+
+            isRendering = false;
+
+            writeToPPM(ctx);
+
+
+            std::clog << "\nRender finished. Program may now be closed." << "\n";
+    }
+
+    void Aero_CPU_RT::render(Scene::scene& scene, const renderOptions& ctx) {
+
+            Utils::thread_pool thread_pool(ctx.threadCount);
+            {
+                std::lock_guard<std::mutex> lock(framebufferMutex);
+                framebuffer.assign(ctx.width * ctx.height, 0);
+            }
+
+            ppmFramebuffer.assign(ctx.width * ctx.height, Utils::color(0, 0, 0));
+
+            std::vector<Renderer::tile> tiles = Renderer::dispatchTiles(ctx.width, ctx.height, ctx.tile_size);
+
+            //completedTileCount = recoveryIndex(ctx);
+
+            isRendering = true;
+            isFileWriterRunning = true;
+
+           // Spin up the dedicated file writing background thread
+            fileWriterThread = std::thread(&Aero_CPU_RT::fileWriterLoop, this, std::ref(tiles), std::ref(ctx), completedTileCount.load());
+
+            Aero::RT::Geometry::hittable_list world = convertSceneObjsGeo(scene);
+            Aero::RT::Camera::camera cam = scene.getSceneCam(0);
             try {
                 if (ctx.multithreaded) {
                     for (int k = completedTileCount; k < tiles.size(); k++) {
@@ -117,6 +186,36 @@ namespace Aero::RT {
             finishedTileQueue.push(tileIndex);
         }
         queueCV.notify_one(); // Wake up the file writer
+    }
+
+    Aero::RT::Geometry::hittable_list Aero_CPU_RT::convertSceneObjsGeo(Scene::scene& scene) {
+        std::cout << "1. Starting scene conversion\n";
+
+        Aero::RT::Geometry::hittable_list sceneWorld;
+
+        for (auto& sceneObject : scene.getSceneObjs()) {
+            std::cout << "2a. Got scene object\n" << std::flush;
+
+            auto hittable = sceneObject->getHittable();
+
+            std::cout << "2b. Got hittable\n" << std::flush;
+
+            sceneWorld.add(hittable);
+
+            std::cout << "2c. Added hittable\n" << std::flush;
+        }
+
+        std::cout << "3. Building BVH\n";
+
+        auto bvh = std::make_shared<Geometry::bvh_node>(sceneWorld);
+
+        std::cout << "4. BVH built successfully\n";
+
+        sceneWorld = Geometry::hittable_list(bvh);
+
+        std::cout << "5. Scene conversion finished\n";
+
+        return sceneWorld;
     }
 
     void Aero_CPU_RT::fileWriterLoop(const std::vector<Renderer::tile>& tiles, const renderOptions& ctx, int startingTileIdx) {

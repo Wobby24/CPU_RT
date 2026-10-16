@@ -1,24 +1,43 @@
 #pragma once
 
-#include "geometry/hittable_list.hpp"
 #include "sceneObject.hpp"
+#include "camera/camera.hpp"
 #include <vector>
-#include <memory>
-#include <map>
-// use smart pointers
+#include <util/ArenaAllocator.hpp>
+#include <cassert>
+
+// reason why we don't use smart pointers for the scene objects is to ensure we can control the memory of the objects in each scene. We can use arena allocations to tightly pack them together in memory.
+// scene will also handle cameras. we can add cameras and then set which one we want during rendering
 namespace Aero::RT::Scene {
 	class scene {
 	public:
-		scene() = default;
-		scene(std::vector<std::shared_ptr<sceneObject>> objs);
+		scene();
+		scene(std::vector<sceneObject*>& objs);
 
-		void add_object(std::shared_ptr<sceneObject> obj);
+		void add_object(sceneObject* obj) {
+			sceneObject* iobj = allocator_.allocate<sceneObject>(obj->getHittable(), obj->getMaterial());
+			objs_.push_back(iobj);
+		}
+
+		void add_camera(Camera::camera* cam) { cams_.push_back(cam); }
+		void set_current_camera(Camera::camera& cam) {
+			current_cam_ = &cam;
+		}
 		
-		std::shared_ptr<sceneObject>& getObj(size_t index) const;
-		std::shared_ptr<sceneObject>& getObj(size_t index);
+	//	[[nodiscard]] sceneObject& getSceneObj(const size_t index) const { return *objs_[index];}
+		sceneObject& getSceneObj(const size_t index) { return *objs_[index];}
+		std::vector<sceneObject*>& getSceneObjs() { return objs_; }
+
+		Camera::camera& getCurrentCam() {
+			assert(current_cam_ != nullptr);
+			return *current_cam_;
+		}
+		Camera::camera& getSceneCam(const size_t index) { return *cams_[index];}
 	private:
-		//std::vector<std::shared_ptr<sceneObject>> objs;
-		Geometry::hittable_list geometry;
-		std::map<int, Materials::material> materials;
+		// just this for now
+		Utils::ArenaAllocator allocator_;
+		std::vector<sceneObject*> objs_;
+		std::vector<Camera::camera*> cams_;
+		Camera::camera* current_cam_ = nullptr;
 	};
 }

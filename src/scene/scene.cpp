@@ -1,11 +1,10 @@
 #include "scene/scene.hpp"
-#include "sceneObject.hpp"
+#include "scene/sceneObject.hpp"
 #include <vector>
-#include <memory>
-#include <map>
 
+// literally nothing to do here for now
 namespace Aero::RT::Scene {
-	scene::scene(std::vector<std::shared_ptr<sceneObject>> objs) {
+	scene::scene() : allocator_(8192) {}
 
-	}
+	scene::scene(std::vector<sceneObject*>& objs) : allocator_(8192) {}
 }

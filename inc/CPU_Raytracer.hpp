@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <fstream>
 #include <vector>
 #include <cstdint>
@@ -16,6 +15,7 @@
 #include "renderer/tile.hpp"
 #include "util/thread_pool.hpp"
 #include "util/color.hpp"
+#include <scene/scene.hpp>
 
 namespace Aero::RT {
 
@@ -24,8 +24,11 @@ namespace Aero::RT {
 		Aero_CPU_RT();
 		~Aero_CPU_RT();
 
+		// test both the current render function and a new one taking the scene ref as a parameter
 		void render(const Aero::RT::Camera::camera& cam,
 			const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx);
+
+		void render(Scene::scene& scene, const renderOptions& ctx);
 
 		void copy_framebuffer(std::vector<uint32_t>& dest_buffer) {
 			std::lock_guard<std::mutex> lock(framebufferMutex);
@@ -60,6 +63,8 @@ namespace Aero::RT {
 			const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx,
 			std::vector<uint32_t>& framebuffer,
 			std::vector<Utils::color>& ppmFramebuffer);
+
+		Aero::RT::Geometry::hittable_list convertSceneObjsGeo(Scene::scene& scene);
 
 		void fileWriterLoop(const std::vector<Renderer::tile>& tiles, const renderOptions& ctx, int startingTileIdx);
 		void writeToPPM(const renderOptions& ctx);

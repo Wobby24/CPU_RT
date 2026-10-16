@@ -55,10 +55,10 @@ set(LIBRARY_DIR "${CMAKE_SOURCE_DIR}/lib")
 
 set(CAMERA_SOURCES
     "${SRC_DIR}/camera/camera.cpp"
-) 
+)
 
 set(SCENE_SOURCES
-    "${SRC_DIR}/scene/scene.cpp"
+        "${SRC_DIR}/scene/scene.cpp"
 )
 
 set(GEOMETRY_SOURCES
@@ -108,6 +108,7 @@ set(PROJECT_SOURCES
     ${CAMERA_SOURCES}
     ${UTIL_SOURCES}
     ${TEXTURE_SOURCES}
+        ${SCENE_SOURCES}
     "${SRC_DIR}/CPU_Raytracer.cpp"
     "${SRC_DIR}/main.cpp"
 )

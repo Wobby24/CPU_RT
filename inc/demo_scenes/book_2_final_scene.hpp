@@ -18,8 +18,7 @@ namespace Aero::RT::Demo_Scenes {
     void book_2_final_scene(Geometry::hittable_list& world, Camera::camera& cam, renderOptions& ctx, bool HQRender = false) {
         Geometry::hittable_list boxes1;
         auto ground = std::make_shared<Materials::lambertian>(Utils::color(0.48, 0.83, 0.53));
-
-       
+        
         int boxes_per_side = 20;
         for (int i = 0; i < boxes_per_side; i++) {
             for (int j = 0; j < boxes_per_side; j++) {
