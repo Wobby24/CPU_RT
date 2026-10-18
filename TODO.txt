@@ -1,18 +1,5 @@
-10/15/2026 8:38 P.M. : Maybe we make a renderTarget abstraction? instead of just passing straight hittable list to the renderer from the scene.
-Although, that might be very redundant
+Oh boy, here we go. TIME TO INTEGRATE JSON FILE LOADING!!! This is going to suck, but at least its just repetitive code. For now, it'll be all in one function,
+then I'll split it up into other functions for things like extracting camera properties, render properties, objects, and constructing the final scene.
+This will give a huuuuge jump in productivity, but its going to take a hot second to get implemented.
 
-10/15/2026 8:42 P.M. : I've decided we should just end up passing the scene to the renderer. This makes it easy to just create a scene in a function, pass it a ref
-to a scene object, then pass that to the renderer, and let it figure out everything else. We just need it to loop over each scene obj, and then somehow
-construct a BVH tree with the scene objects' geometry.
-
-10/16/2026 5:23 P.M. : Having significant troubles implementing the scene rendering. My though at first was to basically just pass the scene, get the
-vector of scene objects, then construct a hittable list out of their hittables they return, then pass that to the renderer, but apparently that doesn't work?
-Something is going on and I cannot put my finger on it, but idk. I can't figure it out, but I have a feeling its the convertSceneObjsGeo function.
-
-10/16/2026 6:17 P.M. : Turns out, the multithreading flag was fucking the entire thing up. Jeez..... Anyways, I got the scene to render from the scene class.
-Problem is the camera used inside of the scene doesn't seem to work whenever i pass it to the renderer, so for now, we need to use an external camera for it.
-
-10/16/2026 6:21 P.M. : If we use the getSceneCamera(index) method in the scene class and use that camera, it does render. Something is going on with the
-current_cam variable then or the method
-
-10/16/2026 6:27 P.M. : Finally got getCurrentCam to work
+My word I HATE NESTED IF STATEMENTS. Problem is I dont know how to make it any cleaner. Its as if we have to do that. Idk ima look into it

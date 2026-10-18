@@ -20,7 +20,7 @@ namespace Aero::RT::Demo_Scenes {
     // allocate the scene object and camera, then integrate scene parameter rendering inside the renderer, and test it.
     // this should make it way more streamline for rendering scenes
     void sceneTestScene(Scene::scene& scene, Aero::RT::renderOptions& ctx) {
-       // Utils::ArenaAllocator allocator(8192);
+
         // 1. define geo and mat
         auto difflight = std::make_shared<Materials::diffuse_light>(Utils::color(4, 4, 4));
         auto pertext = std::make_shared<Textures::noise_texture>(4);

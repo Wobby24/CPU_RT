@@ -189,31 +189,15 @@ namespace Aero::RT {
     }
 
     Aero::RT::Geometry::hittable_list Aero_CPU_RT::convertSceneObjsGeo(Scene::scene& scene) {
-        std::cout << "1. Starting scene conversion\n";
-
         Aero::RT::Geometry::hittable_list sceneWorld;
 
         for (auto& sceneObject : scene.getSceneObjs()) {
-            std::cout << "2a. Got scene object\n" << std::flush;
-
             auto hittable = sceneObject->getHittable();
-
-            std::cout << "2b. Got hittable\n" << std::flush;
-
             sceneWorld.add(hittable);
-
-            std::cout << "2c. Added hittable\n" << std::flush;
         }
 
-        std::cout << "3. Building BVH\n";
-
         auto bvh = std::make_shared<Geometry::bvh_node>(sceneWorld);
-
-        std::cout << "4. BVH built successfully\n";
-
         sceneWorld = Geometry::hittable_list(bvh);
-
-        std::cout << "5. Scene conversion finished\n";
 
         return sceneWorld;
     }
@@ -353,156 +337,4 @@ namespace Aero::RT {
 
         return startingTileIdx;
     }
-
-      /*
-        std::clog << "Finished rendering, writing image data to file..." << "\n";
-        for (int y = 0; y < ctx.height; y++) {
-            for (int x = 0; x < ctx.width; x++) {
-                Aero::RT::Utils::write_color(file, PPMframebuffer[y * ctx.width + x]);
-            }
-        }
-
-        std::cout << "Finished writing data to PPM file. Program can now be safely closed via 'ESC' key or closing out of the window.";*/  
-
-
-    /*  void Aero_CPU_RT::renderNew(const Aero::RT::Camera::camera& cam,
-        const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx) {
-        std::clog << "\nRendering starting resolution: " << ctx.width << "x" << ctx.height << "\n";
-
-        std::ofstream file(ctx.fileName);
-        if (!file) {
-            std::clog << "Could not open output file stream for " << ctx.fileName << "\n";
-            return;
-        }
-
-        file << "P3\n" << ctx.width << " " << ctx.height << "\n255\n";
-
-        for (int j = 0; j < ctx.height; j++) {
-            if (!isRendering) break;
-
-            std::clog << "\rScanlines completed: " << j << "/" << ctx.height << std::flush;
-
-            std::vector<uint32_t> rowBuffer(ctx.width);
-
-            for (int i = 0; i < ctx.width; i++) {
-                Aero::RT::Utils::color pixel_color(0, 0, 0);
-
-                for (int s = 0; s < ctx.samples_per_pixel; s++) {
-                    auto r = cam.get_ray(i, j);
-                    pixel_color += Renderer::ray_color(r, ctx.max_depth, world, ctx.background);
-                }
-
-                double scale = 1.0 / ctx.samples_per_pixel;
-                pixel_color *= scale;
-                Aero::RT::Utils::write_color(file, pixel_color);
-
-                double r = Aero::RT::Utils::linear_to_gamma(pixel_color.x());
-                double g = Aero::RT::Utils::linear_to_gamma(pixel_color.y());
-                double b = Aero::RT::Utils::linear_to_gamma(pixel_color.z());
-
-                rowBuffer[i] = Aero::RT::Utils::toRGBA8(r, g, b, 1.0f);
-            }
-
-            {
-                std::lock_guard<std::mutex> lock(framebufferMutex);
-                for (int i = 0; i < ctx.width; i++) {
-                  //  PPMframebuffer[j * ctx.width + i] = rowBuffer[i];
-                    framebuffer[j * ctx.width + i] = rowBuffer[i];
-                }
-            }
-        }
-        file.close();
-        std::clog << "\rProgram can now be safely closed via 'ESC' key or closing out of the window.\n";
-    }
-
-    // adapt this function for tiles
-    void Aero_CPU_RT::resumeRender(const Aero::RT::Camera::camera& cam,
-        const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx) {
-
-        int validPixelCount = 0;
-        std::vector<uint32_t> tempBuffer(ctx.width * ctx.height, 0);
-
-        std::ifstream readFile(ctx.fileName);
-        if (readFile.is_open()) {
-            std::string line;
-
-            // 1. Safely skip/read the 3 header components using the stream helper
-            Utils::getNextValidPPMLine(readFile); // Magic number ("P3")
-            Utils::getNextValidPPMLine(readFile); // Dimensions ("width height")
-            Utils::getNextValidPPMLine(readFile); // Max color value ("255")
-
-            // 2. Drive the loop by assignment. This gets the next non-comment line automatically.
-            while (!(line = Utils::getNextValidPPMLine(readFile)).empty()) {
-
-                if (validPixelCount >= ctx.width * ctx.height) break;
-
-                std::stringstream ss(line);
-                uint32_t file_r, file_g, file_b;
-
-                if (ss >> file_r >> file_g >> file_b) {
-                    double r = file_r / 255.0;
-                    double g = file_g / 255.0;
-                    double b = file_b / 255.0;
-
-                    tempBuffer[validPixelCount] = Aero::RT::Utils::toRGBA8(r, g, b, 1.0f);
-                    validPixelCount++;
-                }
-            }
-            readFile.close();
-
-            {
-                std::lock_guard<std::mutex> lock(framebufferMutex);
-                framebuffer = tempBuffer;
-            }
-        }
-
-        int j = validPixelCount / ctx.width;
-
-        if (j >= ctx.height) {
-            std::clog << "\nRender was already fully complete.\n";
-            return;
-        }
-
-        std::clog << "\nResuming render at scanline row: " << j << "\n";
-
-        std::ofstream file(ctx.fileName, std::ios_base::app);
-
-        for (; j < ctx.height; j++) {
-            if (!isRendering) break;
-
-            std::clog << "\rScanlines completed: " << j << "/" << ctx.height << std::flush;
-
-            std::vector<uint32_t> rowBuffer(ctx.width);
-
-            for (int i = 0; i < ctx.width; i++) {
-                Aero::RT::Utils::color pixel_color(0, 0, 0);
-
-                for (int s = 0; s < ctx.samples_per_pixel; s++) {
-                    auto r = cam.get_ray(i, j);
-                    pixel_color += Renderer::ray_color(r, ctx.max_depth, world, ctx.background);
-                }
-
-                double scale = 1.0 / ctx.samples_per_pixel;
-                pixel_color *= scale;
-
-                Aero::RT::Utils::write_color(file, pixel_color);
-
-                double r = Aero::RT::Utils::linear_to_gamma(pixel_color.x());
-                double g = Aero::RT::Utils::linear_to_gamma(pixel_color.y());
-                double b = Aero::RT::Utils::linear_to_gamma(pixel_color.z());
-
-                rowBuffer[i] = Aero::RT::Utils::toRGBA8(r, g, b, 1.0f);
-            }
-
-            {
-                std::lock_guard<std::mutex> lock(framebufferMutex);
-                for (int i = 0; i < ctx.width; i++) {
-                    framebuffer[j * ctx.width + i] = rowBuffer[i];
-                }
-            }
-        }
-
-        file.close();
-        std::clog << "\nRendering finished. Program can now be safely closed via 'ESC' key or closing out of the window.\n";
-    }*/
-    }
+}

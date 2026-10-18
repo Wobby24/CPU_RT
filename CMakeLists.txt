@@ -58,7 +58,7 @@ set(CAMERA_SOURCES
 )
 
 set(SCENE_SOURCES
-        "${SRC_DIR}/scene/scene.cpp"
+    "${SRC_DIR}/scene/scene.cpp"
 )
 
 set(GEOMETRY_SOURCES
@@ -91,6 +91,7 @@ set(UTIL_SOURCES
     "${SRC_DIR}/util/image_loader.cpp"
     "${SRC_DIR}/util/perlin_noise.cpp"
     "${SRC_DIR}/util/thread_pool.cpp"
+    "${SRC_DIR}/util/readJSON_Scene.cpp"
 )
 
 set(TEXTURE_SOURCES
@@ -108,17 +109,10 @@ set(PROJECT_SOURCES
     ${CAMERA_SOURCES}
     ${UTIL_SOURCES}
     ${TEXTURE_SOURCES}
-        ${SCENE_SOURCES}
+    ${SCENE_SOURCES}
     "${SRC_DIR}/CPU_Raytracer.cpp"
     "${SRC_DIR}/main.cpp"
 )
-
-# Post-build copy: only valid after the target exists
-#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
- #   COMMAND ${CMAKE_COMMAND} -E copy_directory
-  #  "${CMAKE_SOURCE_DIR}/rt_output"
-   # "$<TARGET_FILE_DIR:${PROJECT_NAME}>/rt_output"
-#)
 
 # Executable
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
@@ -131,6 +125,7 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE  OGL_RT_TextureView::OGL_RT_TextureView)
+target_link_libraries(${PROJECT_NAME} PRIVATE  nlohmann_json::nlohmann_json)
 
 # Includes
 target_include_directories(${PROJECT_NAME}
@@ -142,7 +137,6 @@ target_include_directories(${PROJECT_NAME}
 file(GLOB_RECURSE PROJECT_HEADERS
     "${INCLUDE_DIR}/*.h"
     "${INCLUDE_DIR}/*.hpp"
-    #maybe add ext?
 )
 
 # Debug macro

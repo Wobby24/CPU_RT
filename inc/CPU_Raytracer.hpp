@@ -52,12 +52,6 @@ namespace Aero::RT {
 		std::mutex framebufferMutex;
 
 		std::atomic<bool> isRendering{ false };
-		
-		// scanline code (old, not recommeneded)
-		void resumeRender(const Aero::RT::Camera::camera& cam,
-			const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx);
-		void renderNew(const Aero::RT::Camera::camera& cam,
-				const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx);
 
 		void renderTiles(int tileIndex, const Aero::RT::Renderer::tile& t, const Aero::RT::Camera::camera& cam,
 			const Aero::RT::Geometry::hittable_list& world, const renderOptions& ctx,

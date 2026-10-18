@@ -19,7 +19,11 @@ namespace Aero::RT::Scene {
 			objs_.push_back(iobj);
 		}
 
-		void add_camera(Camera::camera* cam) { cams_.push_back(cam); }
+		void add_camera(Camera::camera* cam) {
+			Camera::camera* icam = allocator_.allocate<Camera::camera>();
+			cams_.push_back(icam);
+		}
+
 		void set_current_camera(Camera::camera& cam) {
 			current_cam_ = &cam;
 		}

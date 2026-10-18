@@ -1,0 +1,76 @@
+{
+  "aero_rt_scene": {
+    "name": "test_scene",
+    "camera": {
+      "position": [32, 3, 6],
+      "lookAt": [0, 2, 0],
+      "fov": 20,
+      "vup": [0, 1, 0],
+      "defocus_angle": 0
+    },
+    "objects": [
+      {
+        "name": "lightSphere",
+        "type": "static",
+        "position": [0, 7, 0],
+        "geometry": {
+          "type": "sphere",
+          "radius": 2
+        },
+        "material": {
+          "comment": "Maybe instead of using an array of 3 numbers we just use hex for color then convert it?",
+          "type": "diffuse_light",
+          "color": [4, 4, 4]
+        }
+      },
+      {
+        "name": "largeSphere",
+        "type": "static",
+        "position": [0, -1000, 0],
+        "geometry": {
+          "type": "sphere",
+          "radius": 100
+        },
+        "material": {
+          "type": "lambertian",
+          "pattern" : "perlin_noise",
+          "noise_scale" : 4
+        }
+      },
+      {
+        "name": "otherSphere",
+        "type": "static",
+        "position": [0, 2, 0],
+        "geometry": {
+          "type": "sphere",
+          "radius": 2
+        },
+        "material": {
+          "type": "lambertian",
+          "pattern" : "perlin_noise",
+          "noise_scale" : 4
+        }
+      },
+      {
+        "name": "lightQuad",
+        "geometry": {
+          "type": "quad",
+          "Q": [3, 1, -2],
+          "U": [2, 0, 0],
+          "V": [0, 2, 0]
+        },
+        "material": {
+          "type": "diffuse_light",
+          "color" : [4, 4, 4]
+        }
+      }
+    ],
+    "render_options": {
+      "background": [0, 0, 0],
+      "width": 400,
+      "height": 225,
+      "samples_per_pixel": 100,
+      "max_depth": 50
+    }
+  }
+}
