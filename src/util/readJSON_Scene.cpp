@@ -43,11 +43,25 @@ namespace Aero::RT::Utils {
                     pos[i] = n;
                     i++;
                 }
+                // for (int i = 0; i < 3; i++) {
+                //  pos[i] = objects["position"][i]; // idk if this will work
+                //}
                 // extract mat properties
+                std::shared_ptr<Materials::material> mat;
 
                 if (objects.contains("material") && objects["material"].contains("type")) {
+                    Utils::color cl;
+                    if (objects["material"].contains("color")) {
+                        for (auto& n : objects["material"]["color"]) {
+                            cl[i] = n;
+                            i++;
+                        }
+                    }
                     if (objects["material"]["type"] == "lambertian") {
-                            
+                        mat = std::make_shared<Materials::lambertian>(cl);
+                    }
+                    else if () {
+
                     }
                 }
 
@@ -82,8 +96,6 @@ namespace Aero::RT::Utils {
             Utils::Logger::instance().log(Logger::Severity::WARNING, "JSON did not contain 'background' entry! defaulting to 50, 50, 50");
             options.background = Utils::color(50, 50, 50);
         }
-
-
     }
 
     Camera::camera sceneJSONReader::extractCamera() {
