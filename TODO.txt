@@ -1,5 +1,1 @@
-Oh boy, here we go. TIME TO INTEGRATE JSON FILE LOADING!!! This is going to suck, but at least its just repetitive code. For now, it'll be all in one function,
-then I'll split it up into other functions for things like extracting camera properties, render properties, objects, and constructing the final scene.
-This will give a huuuuge jump in productivity, but its going to take a hot second to get implemented.
-
-My word I HATE NESTED IF STATEMENTS. Problem is I dont know how to make it any cleaner. Its as if we have to do that. Idk ima look into it
+Break down the json parsing even futher. Make it to where individual geometry gets parsed out
