@@ -85,6 +85,28 @@ namespace Aero::RT::Utils {
         }
     }
 
+
+    // we will also need to add texture handling functions
+    Materials::dielectric sceneJSONReader::parseDielectric() {
+
+    }
+
+    Materials::diffuse_light sceneJSONReader::parseDiffuseLight() {
+
+    }
+
+    Materials::isotropic sceneJSONReader::parseIsotropic() {
+
+    }
+
+    Materials::lambertian sceneJSONReader::parseLambertian() {
+
+    }
+
+    Materials::metal sceneJSONReader::parseMetal() {
+
+    }
+
     void sceneJSONReader::extractRenderOptions(Aero::RT::renderOptions &options) {
         if (!data["aero_rt_scene"]["render_options"]) {
             throw std::runtime_error("JSON did not contain 'render_options' entry!");

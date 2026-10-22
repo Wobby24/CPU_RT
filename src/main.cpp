@@ -65,8 +65,8 @@ int main() {
 
     // eventually we wont need this and can just move it onto threadpool
     std::thread tracerThread([&, tiles]() {
-        renderer.render(cam, world, options);
-        // renderer.render(scene, options);
+        //renderer.render(cam, world, options);
+          renderer.render(scene, options);
         });
 
     // pre-allocate our framebuffer that the output viewer displays
