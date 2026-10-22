@@ -40,25 +40,23 @@ int main() {
     Aero::GL::OGL_RT_TextureViewer texViewer;
     Aero::RT::Scene::scene scene;
 
-    options.multithreaded = false;
-    options.threadCount = 10;
-
     scene.add_camera(&cam);
     scene.set_current_camera(cam);
 
     // dont do this, make a scene class for the love of all things good. the scene class can the pass its hittable list to the renderer and we shuld be good
     switch (11) {
-    case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam, options);  break;
-    case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam, options); break;
-    case 3: Aero::RT::Demo_Scenes::earth(world, cam, options); break;
-    case 4: Aero::RT::Demo_Scenes::perlin_spheres(world, cam, options); break;
-    case 5: Aero::RT::Demo_Scenes::quads(world, cam, options); break;
-    case 6: Aero::RT::Demo_Scenes::simple_lights(world, cam, options); break;
-    case 7: Aero::RT::Demo_Scenes::cornell_box(world, cam, options); break;
-    case 8: Aero::RT::Demo_Scenes::cornell_smoke_boxes(world, cam, options); break;
-    case 9: Aero::RT::Demo_Scenes::book_2_final_scene(world, cam, options, true); break; // HQ render
-    case 10: Aero::RT::Demo_Scenes::book_2_final_scene(world, cam, options, false); break; // LQ render
+        case 1: Aero::RT::Demo_Scenes::bouncing_spheres(world, cam, options);  break;
+        case 2: Aero::RT::Demo_Scenes::checkered_spheres(world, cam, options); break;
+        case 3: Aero::RT::Demo_Scenes::earth(world, cam, options); break;
+        case 4: Aero::RT::Demo_Scenes::perlin_spheres(world, cam, options); break;
+        case 5: Aero::RT::Demo_Scenes::quads(world, cam, options); break;
+        case 6: Aero::RT::Demo_Scenes::simple_lights(world, cam, options); break;
+        case 7: Aero::RT::Demo_Scenes::cornell_box(world, cam, options); break;
+        case 8: Aero::RT::Demo_Scenes::cornell_smoke_boxes(world, cam, options); break;
+        case 9: Aero::RT::Demo_Scenes::book_2_final_scene(world, cam, options, true); break; // HQ render
+        case 10: Aero::RT::Demo_Scenes::book_2_final_scene(world, cam, options, false); break; // LQ render
         case 11: Aero::RT::Demo_Scenes::sceneTestScene(scene, options); break;
+        default: Aero::RT::Demo_Scenes::sceneTestScene(scene, options);
     }
 
     cam.initialize(options.width, options.height);
@@ -67,8 +65,8 @@ int main() {
 
     // eventually we wont need this and can just move it onto threadpool
     std::thread tracerThread([&, tiles]() {
-       // renderer.render(cam, world, ctx);
-           renderer.render(scene, options);
+        renderer.render(cam, world, options);
+        // renderer.render(scene, options);
         });
 
     // pre-allocate our framebuffer that the output viewer displays

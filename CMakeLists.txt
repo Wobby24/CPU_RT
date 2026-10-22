@@ -91,7 +91,7 @@ set(UTIL_SOURCES
     "${SRC_DIR}/util/image_loader.cpp"
     "${SRC_DIR}/util/perlin_noise.cpp"
     "${SRC_DIR}/util/thread_pool.cpp"
-    "${SRC_DIR}/util/readJSON_Scene.cpp"
+   # "${SRC_DIR}/util/readJSON_Scene.cpp"
 )
 
 set(TEXTURE_SOURCES

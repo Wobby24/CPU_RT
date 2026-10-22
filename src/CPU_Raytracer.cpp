@@ -102,7 +102,7 @@ namespace Aero::RT {
             fileWriterThread = std::thread(&Aero_CPU_RT::fileWriterLoop, this, std::ref(tiles), std::ref(ctx), completedTileCount.load());
 
             Aero::RT::Geometry::hittable_list world = convertSceneObjsGeo(scene);
-            Aero::RT::Camera::camera cam = scene.getSceneCam(0);
+            Aero::RT::Camera::camera cam = scene.getCurrentCam();
             try {
                 if (ctx.multithreaded) {
                     for (int k = completedTileCount; k < tiles.size(); k++) {
@@ -196,7 +196,8 @@ namespace Aero::RT {
             sceneWorld.add(hittable);
         }
 
-        auto bvh = std::make_shared<Geometry::bvh_node>(sceneWorld);
+        // this line is causing the SIGSEGV, could potentially be wiht how its called in the render function
+       auto bvh = std::make_shared<Geometry::bvh_node>(sceneWorld);
         sceneWorld = Geometry::hittable_list(bvh);
 
         return sceneWorld;

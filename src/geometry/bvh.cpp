@@ -15,13 +15,15 @@ namespace Aero::RT::Geometry {
         // persist the resulting bounding volume hierarchy.
     }
 
-    bvh_node::bvh_node(std::vector<std::shared_ptr<hittable>>& objects, size_t start, size_t end) {
+    // during debug, this constructor gets callled ALOT, but we only have about 4 objects
+        bvh_node::bvh_node(std::vector<std::shared_ptr<hittable>>& objects, size_t start, size_t end) {
         // Build the bounding box of the span of source objects
         bbox = Math::aabb::empty;
         for (size_t object_index = start; object_index < end; object_index++) {
             bbox = Math::aabb(bbox, objects[object_index]->bounding_box());
         }
         int axis = bbox.longest_axis();
+
 
         auto comparator = (axis == 0) ? box_x_compare
             : (axis == 1) ? box_y_compare
